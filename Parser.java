@@ -29,26 +29,22 @@ public class Parser {
 	 
 	 void removeTagsAndSetImportance () throws IOException
 	 {
+		 String webPageString;
+	File webPage;
+	Word [] WordsArray;
+	
+	 Parser (String s, File f) throws IOException
+	 {
+		 webPage = f;
+		 webPageString = readFile (s);
+	 }
+	 
+	 void removeTagsAndSetImportance () throws IOException
+	 {
 		 int i=0;
 		 WordsArray = new Word [webPageString.length()];
-		 Document doc2 = Jsoup.parse(webPageString);
 		 
-
-		/* NodeTraversor traversor  = new NodeTraversor(new NodeVisitor() {	 
-		   @Override
-		   public void tail(Node node, int depth) {
-		     
-		   }
-
-		   @Override
-		   public void head(Node node, int depth) {        
-		   }
-		 });
-
-		 traversor.traverse(doc2.body());
-		 String modifiedHtml = doc2.toString();
-		 
-		 */
+		 webPageString = webPageString.replaceAll("(<\\w+)[^>]*(>)", "$1$2");
 		 
 		 
 		 if (webPageString.contains("<title>"))
@@ -280,12 +276,10 @@ public class Parser {
 			i++;
 		 }
 		 
-		 
 		 for (int m=0; m<i; m++)
 		 {
 			 System.out.println (WordsArray[m].Name + "  " + WordsArray[m].Importance);
-		 }
-		 
+		 } 
 	 }
 	 
 	 private String readFile(String file) throws IOException {
