@@ -32,5 +32,13 @@ public class Main {
         {
             System.err.println("cannot read file");
         }
+        
+        File f = new File("stemmedtext.html");
+		
+		Parser P = new Parser("stemmedtext.html", f);
+		
+		P.webPage = f;
+
+		P.removeTagsAndSetImportance();
     }
 }
