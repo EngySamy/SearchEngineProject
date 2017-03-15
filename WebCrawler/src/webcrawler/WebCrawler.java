@@ -10,6 +10,7 @@ package webcrawler;
  * @author DeLL
  */
 
+import com.google.common.hash.BloomFilter;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -23,7 +24,7 @@ import java.util.Vector;
 public class WebCrawler {
 
     
-    protected String processURL(String theURL) {
+    protected String processURL(String theURL) { //to remove bookmark from the link ==>  www.eee.com/rr/ = www.eee.com/rr/#e1
         int endPos;
         if (theURL.indexOf("?") > 0) {
             endPos = theURL.indexOf("?");
@@ -43,6 +44,7 @@ public class WebCrawler {
 
             // need http protocol
             BloomFilter<String> bf;
+            
             String mainPath="https://www.w3schools.com/html/html_links.asp";
             URL mainUrl=new URL(mainPath);
             doc = Jsoup.connect(mainPath).get();
