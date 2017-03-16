@@ -8,9 +8,14 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) 
     {
+        DataBase DB=new DataBase();
+        DB.connect();
+        DB.createTables();
+        
         try
         {
-            Scanner In1=new Scanner(new File("input.html")); //file here from which you want to remove the stop words
+            //Scanner In1=new Scanner(new File("input.html")); //file here from which you want to remove the stop words
+            String In1="<title>Event-driven programming - Wikipedia</title>";
             FileOutputStream Out1=new FileOutputStream("removedstopwords.html");
 
             stopWordsRemover swr=new stopWordsRemover();
@@ -32,13 +37,5 @@ public class Main {
         {
             System.err.println("cannot read file");
         }
-        
-        File f = new File("stemmedtext.html");
-		
-		Parser P = new Parser("stemmedtext.html", f);
-		
-		P.webPage = f;
-
-		P.removeTagsAndSetImportance();
     }
 }
