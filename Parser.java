@@ -2,6 +2,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
@@ -20,6 +22,7 @@ public class Parser {
 	String webPageString;
 	File webPage;
 	Word [] WordsArray;
+	Map <String, Word> WordsInfo = new HashMap();
 	
 	 Parser (String s, File f) throws IOException
 	 {
@@ -29,27 +32,14 @@ public class Parser {
 	 
 	 void removeTagsAndSetImportance () throws IOException
 	 {
-		 String webPageString;
-	File webPage;
-	Word [] WordsArray;
-	
-	 Parser (String s, File f) throws IOException
-	 {
-		 webPage = f;
-		 webPageString = readFile (s);
-	 }
-	 
-	 void removeTagsAndSetImportance () throws IOException
-	 {
-		 int i=0;
-		 WordsArray = new Word [webPageString.length()];
+		System.out.println("Length : " + webPageString.length());
 		 
 		 webPageString = webPageString.replaceAll("(<\\w+)[^>]*(>)", "$1$2");
 		 
 		 
 		 if (webPageString.contains("<title>"))
 		 {
-			String title = StringUtils.substringBetween(webPageString, "<title", "</title>");
+			String title = StringUtils.substringBetween(webPageString, "<title>", "</title>");
 			title = title.trim();
 			Document doc = Jsoup.parse(title);
 			title = doc.text();
@@ -57,11 +47,19 @@ public class Parser {
 			
 			for (String s : arr)
 			{
-				Word W = new Word();
-				W.Name = s;
-				W.Importance = 'T';
-				WordsArray[i] = W;
-				i++;
+				if (WordsInfo.containsKey(s))
+				{
+					Word W = (Word) WordsInfo.get(s);
+					W.Count++;
+					W.Importance = 'T';
+				}
+				else
+				{
+					Word W = new Word();
+					W.Importance = 'T';
+					W.Count++; 
+					WordsInfo.put(s, W);
+				}
 			}
 			
 			webPageString = StringUtils.remove(webPageString, title);
@@ -78,12 +76,21 @@ public class Parser {
 				String[] arr = header.split(" ");
 				
 				for (String s : arr)
-				{
-					Word W = new Word();
-					W.Name = s;
-					W.Importance = 'H';
-					WordsArray[i] = W;
-					i++;
+				{	
+					if (WordsInfo.containsKey(s))
+					{
+						Word W = (Word) WordsInfo.get(s);
+						W.Count++;
+						if (W.Importance != 'T')
+						  W.Importance = 'H';
+					}
+					else
+					{
+						Word W = new Word();
+						W.Importance = 'H';
+						W.Count++; 
+						WordsInfo.put(s, W);
+					}
 				}
 				webPageString = StringUtils.remove(webPageString, header);
 				webPageString = StringUtils.remove(webPageString, "<header>");
@@ -106,11 +113,20 @@ public class Parser {
 				
 				for (String s : arr)
 				{
-					Word W = new Word();
-					W.Name = s;
-					W.Importance = 'H';
-					WordsArray[i] = W;
-					i++;
+					if (WordsInfo.containsKey(s))
+					{
+						Word W = (Word) WordsInfo.get(s);
+						W.Count++;
+						if (W.Importance != 'T')
+						   W.Importance = 'H';
+					}
+					else
+					{
+						Word W = new Word();
+						W.Importance = 'H';
+						W.Count++; 
+						WordsInfo.put(s, W);
+					}
 				}
 				
 				webPageString = StringUtils.remove(webPageString, h1);
@@ -134,11 +150,20 @@ public class Parser {
 				
 				for (String s : arr)
 				{
-					Word W = new Word();
-					W.Name = s;
-					W.Importance = 'H';
-					WordsArray[i] = W;
-					i++;
+					if (WordsInfo.containsKey(s))
+					{
+						Word W = (Word) WordsInfo.get(s);
+						W.Count++;
+						if (W.Importance != 'T')
+							W.Importance = 'H';
+					}
+					else
+					{
+						Word W = new Word();
+						W.Importance = 'H';
+						W.Count++; 
+						WordsInfo.put(s, W);
+					}
 				}
 				
 				webPageString = StringUtils.remove(webPageString, h2);
@@ -162,11 +187,20 @@ public class Parser {
 				
 				for (String s : arr)
 				{
-					Word W = new Word();
-					W.Name = s;
-					W.Importance = 'H';
-					WordsArray[i] = W;
-					i++;
+					if (WordsInfo.containsKey(s))
+					{
+						Word W = (Word) WordsInfo.get(s);
+						W.Count++;
+						if (W.Importance != 'T')
+							W.Importance = 'H';
+					}
+					else
+					{
+						Word W = new Word();
+						W.Importance = 'H';
+						W.Count++; 
+						WordsInfo.put(s, W);
+					}
 				}
 				
 				webPageString = StringUtils.remove(webPageString, h3);
@@ -189,11 +223,20 @@ public class Parser {
 				
 				for (String s : arr)
 				{
-					Word W = new Word();
-					W.Name = s;
-					W.Importance = 'H';
-					WordsArray[i] = W;
-					i++;
+					if (WordsInfo.containsKey(s))
+					{
+						Word W = (Word) WordsInfo.get(s);
+						W.Count++;
+						if (W.Importance != 'T')
+							W.Importance = 'H';
+					}
+					else
+					{
+						Word W = new Word();
+						W.Importance = 'H';
+						W.Count++; 
+						WordsInfo.put(s, W);
+					}
 				}
 				
 				webPageString = StringUtils.remove(webPageString, h4);
@@ -216,11 +259,20 @@ public class Parser {
 				
 				for (String s : arr)
 				{
-					Word W = new Word();
-					W.Name = s;
-					W.Importance = 'H';
-					WordsArray[i] = W;
-					i++;
+					if (WordsInfo.containsKey(s))
+					{
+						Word W = (Word) WordsInfo.get(s);
+						W.Count++;
+						if (W.Importance != 'T')
+							W.Importance = 'H';
+					}
+					else
+					{
+						Word W = new Word();
+						W.Importance = 'H';
+						W.Count++; 
+						WordsInfo.put(s, W);
+					}
 				}
 				
 				webPageString = StringUtils.remove(webPageString, h5);
@@ -243,11 +295,20 @@ public class Parser {
 				
 				for (String s : arr)
 				{
-					Word W = new Word();
-					W.Name = s;
-					W.Importance = 'H';
-					WordsArray[i] = W;
-					i++;
+					if (WordsInfo.containsKey(s))
+					{
+						Word W = (Word) WordsInfo.get(s);
+						W.Count++;
+						if (W.Importance != 'T')
+							W.Importance = 'H';
+					}
+					else
+					{
+						Word W = new Word();
+						W.Importance = 'H';
+						W.Count++; 
+						WordsInfo.put(s, W);
+					}
 				}
 				
 				webPageString = StringUtils.remove(webPageString, h6);
@@ -269,17 +330,27 @@ public class Parser {
 		 
 		 for (String s : arr)
 		 {
-			Word W = new Word();
-			W.Name = s;
-			W.Importance = 'X';
-			WordsArray[i] = W;
-			i++;
+			 if (WordsInfo.containsKey(s))
+				{
+					Word W = (Word) WordsInfo.get(s);
+					W.Count++;
+					if (W.Importance != 'T' && W.Importance != 'H')
+						  W.Importance = 'X';
+				}
+				else
+				{
+					Word W = new Word();
+					W.Importance = 'X';
+					W.Count++; 
+					WordsInfo.put(s, W);
+				}
 		 }
-		 
-		 for (int m=0; m<i; m++)
-		 {
-			 System.out.println (WordsArray[m].Name + "  " + WordsArray[m].Importance);
-		 } 
+		 for (Map.Entry<String, Word> entry : WordsInfo.entrySet()) {
+			    String key = entry.getKey();
+			    Word value = entry.getValue();
+			    System.out.println(key + "  count : " + value.Count +  "  Importance : " + value.Importance);
+			}
+		  
 	 }
 	 
 	 private String readFile(String file) throws IOException {
