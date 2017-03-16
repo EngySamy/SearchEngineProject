@@ -7,11 +7,6 @@ import java.util.Scanner;
 
 public class Stemmer {
     
-    Stemmer()
-    {
-        
-    }
-    
     void stemTerm (Scanner in,FileOutputStream out) 
     {
         while(in.hasNext())
@@ -25,9 +20,10 @@ public class Stemmer {
                 stemmer.stem();
                 s1=stemmer.getCurrent();
         
-                //System.out.println(s1);
+                if(!"".equals(s1))
+                        s1+=" ";
                 PrintStream p=new PrintStream(out);
-                p.println(s1);
+                p.printf(s1);
             }
         
     }
