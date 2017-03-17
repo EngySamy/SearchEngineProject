@@ -10,6 +10,8 @@ package projectapt;
  * @author Mennah Rabie
  */
 import java.sql.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Database {
     // JDBC driver name and database URL
@@ -18,7 +20,7 @@ public class Database {
 
    //  Database credentials
    String USER = "Mennah";
-   String PASS = "";
+   String PASS = "1371994";
    
    Connection conn = null;
    Statement stmt = null;
@@ -51,24 +53,36 @@ public class Database {
             System.out.println("Creating tables in given database...");
             stmt = conn.createStatement();
 
-            String URLTable= "CREATE TABLE Websites " +
-                          "(Link_ID BIGINT not NULL, " +
-                          " Link VARCHAR(255), " + 
+        
+            
+          String URLTable= "CREATE TABLE SearchEngine.Websites " +
+                          "(Link_ID BIGINT NOT NULL AUTO_INCREMENT, " +
+                          " Link VARCHAR(255) UNIQUE, " + 
                           " Document LONGTEXT, " +
                           " PRIMARY KEY ( Link_ID ))"; 
 
-            stmt.executeUpdate(URLTable);
-            System.out.println("Created URL table in given database...");
 
-            String KeywordsTable= "CREATE TABLE Keywords " +
-                         "(Keyword_ID BIGINT not NULL, " +
-                         " Keyword VARCHAR(255), " + 
+           PreparedStatement ps1 = conn.prepareStatement(URLTable);
+           ps1.executeUpdate();
+
+           System.out.println("Created URL table in given database...");
+            
+
+           String KeywordsTable= "CREATE TABLE SearchEngine.Keywords " +
+                         "(Keyword_ID BIGINT NOT NULL AUTO_INCREMENT, " +
+                         " Keyword VARCHAR(255) UNIQUE, " + 
                          " PRIMARY KEY ( Keyword_ID ))"; 
+           String AlterKeywords = "ALTER TABLE SearchEngine.Keywords AUTO_INCREMENT = 1";
+           
+           PreparedStatement ps3 = conn.prepareStatement(KeywordsTable);
+           ps3.executeUpdate();
+           PreparedStatement ps5 = conn.prepareStatement(AlterKeywords);
+           ps5.executeUpdate();
 
-            stmt.executeUpdate(KeywordsTable);
-            System.out.println("Created Keywords table in given database...");
+           System.out.println("Created Keywords table in given database...");
 
-            String InfoTable= "CREATE TABLE Information " +
+          
+           String InfoTable= "CREATE TABLE SearchEngine.Information " +
                          "(Link_ID BIGINT not NULL," +
                          " Keyword_ID BIGINT not NULL," +
                          " FOREIGN KEY (Link_ID) REFERENCES Websites (Link_ID)," +
@@ -76,8 +90,9 @@ public class Database {
                          " Importance CHAR, " +
                          " Frequency DOUBLE, " + 
                          " PRIMARY KEY ( Link_ID , Keyword_ID ))"; 
-
-            stmt.executeUpdate(InfoTable);
+           
+            PreparedStatement ps6 = conn.prepareStatement(InfoTable);
+            ps6.executeUpdate();
             System.out.println("Created Information table in given database...");
         }
         catch(SQLException se)
@@ -111,5 +126,85 @@ public class Database {
         
         System.out.println("Goodbye!");
     }
-   
+   ///////Insert into database///////
+    void InsertURL (String URL, String Doc)
+    {
+       String Query= "INSERT INTO SearchEngine.Websites " +
+                     "(Link, Document)" +
+                     "VALUES" +
+                     "(?, ?);"; 
+       try 
+       {
+         PreparedStatement ps = conn.prepareStatement(Query);
+         ps.setString(1, URL);
+         ps.setString(2, Doc);
+         ps.executeUpdate();
+       } 
+       catch (SQLException ex) 
+       {
+         Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+       }
+        System.out.println("Inserted URL successfully...");
+    }
+    
+    void InsertKeyword (String Keyword)
+    {
+       String Query= "INSERT INTO SearchEngine.Keywords " +
+                     "(Keyword)" +
+                     "VALUES" +
+                     "(?);"; 
+       try 
+       {
+         PreparedStatement ps = conn.prepareStatement(Query);
+         ps.setString(1, Keyword);
+         ps.executeUpdate();
+       } 
+       catch (SQLException ex) 
+       {
+         Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+       }
+        System.out.println("Inserted Keyword successfully...");
+    }
+    
+    void Insertinfo (Long LnkID, Long KeyID, char Imp, Double Freq)
+    {
+       String Query= "INSERT INTO SearchEngine.Information " +
+                     "(Link_ID, Keyword_ID, Importance, Frequency)" +
+                     "VALUES" +
+                     "('"+LnkID+"', '"+KeyID+"', '"+Imp+"','"+Freq+"');"; 
+       try 
+       {
+         PreparedStatement ps = conn.prepareStatement(Query);
+         ps.executeUpdate();
+       } 
+       catch (SQLException ex) 
+       {
+         Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+       }
+        System.out.println("Inserted Info successfully...");
+    }
+    
+    Long SelectID () throws SQLException
+    {
+       String Query= "SELECT MAX(Keyword_ID) FROM SearchEngine.Keywords;" ;
+       ResultSet rs = null;            
+       try 
+       {
+         Statement stmt = conn.createStatement();
+         rs = stmt.executeQuery(Query);
+
+       } 
+       catch (SQLException ex) 
+       {
+         Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+       }
+        System.out.println("Selected Info Successfully....");
+        Long val = null;
+        
+        if(rs.next())
+        {
+            val =  ((Number) rs.getObject(1)).longValue();
+        }
+        return val;
+    }
 }
