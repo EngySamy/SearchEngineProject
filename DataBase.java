@@ -1,15 +1,24 @@
-package stemmer;
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package projectapt;
 
+/**
+ *
+ * @author Mennah Rabie
+ */
 import java.sql.*;
 
-public class DataBase {
+public class Database {
     // JDBC driver name and database URL
    String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
-   String DB_URL = "jdbc:mysql://localhost/STUDENTS";
+   String DB_URL = "jdbc:mysql://localhost:3306/mysql?zeroDateTimeBehavior=convertToNull";
 
    //  Database credentials
-   String USER = "username";
-   String PASS = "password";
+   String USER = "Mennah";
+   String PASS = "";
    
    Connection conn = null;
    Statement stmt = null;
@@ -24,15 +33,15 @@ public class DataBase {
              //Open a connection
              System.out.println("Connecting to a selected database...");
              conn = DriverManager.getConnection(DB_URL, USER, PASS);
-             System.out.println("Connected database successfully...");
+             PreparedStatement ps = conn.prepareStatement("CREATE DATABASE SearchEngine");
+             int result = ps.executeUpdate();
+             System.out.println("created database successfully...");
          }
-         
          catch(Exception e)
          {
             //Handle errors for Class.forName
             e.printStackTrace();
          }
-         
     }
     void createTables()
     {
@@ -60,8 +69,10 @@ public class DataBase {
             System.out.println("Created Keywords table in given database...");
 
             String InfoTable= "CREATE TABLE Information " +
-                         "(FOREIGN KEY (Link_ID) REFERENCES 'Websites' (Link_ID)," +
-                         " FOREIGN KEY (Keyword_ID) REFERENCES 'Keywords' (Keyword_ID)" + 
+                         "(Link_ID BIGINT not NULL," +
+                         " Keyword_ID BIGINT not NULL," +
+                         " FOREIGN KEY (Link_ID) REFERENCES Websites (Link_ID)," +
+                         " FOREIGN KEY (Keyword_ID) REFERENCES Keywords (Keyword_ID)," + 
                          " Importance CHAR, " +
                          " Frequency DOUBLE, " + 
                          " PRIMARY KEY ( Link_ID , Keyword_ID ))"; 
