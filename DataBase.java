@@ -5,10 +5,7 @@
  */
 package projectapt;
 
-/**
- *
- * @author Mennah Rabie
- */
+
 import java.sql.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -204,6 +201,30 @@ public class Database {
         if(rs.next())
         {
             val =  ((Number) rs.getObject(1)).longValue();
+        }
+        return val;
+    }
+    
+    String SelectURL () throws SQLException
+    {
+       String Query= "SELECT Document FROM SearchEngine.Websites;" ;
+       ResultSet rs = null;            
+       try 
+       {
+         Statement stmt = conn.createStatement();
+         rs = stmt.executeQuery(Query);
+
+       } 
+       catch (SQLException ex) 
+       {
+         Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+       }
+        System.out.println("URL content retrieved Successfully....");
+        String val = null;
+        
+        if(rs.next())
+        {
+            val = rs.getString("Document");
         }
         return val;
     }
