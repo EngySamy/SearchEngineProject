@@ -1,43 +1,10 @@
 package webcrawler;
 
-/**
- * A simple controller class for a multithreaded environment, where threads
- * may insert and process 'tasks' from/into a queue. Multiple 'depth-levels'
- * are supported. 'Tasks' are not to be confused with OS tasks, but just
- * denote elements in the queue, i.e. a task for the thread to perform.
- *
- * Note that the depth level in this class is just to make sure that where
- * appropriate a thread may only read tasks from level n and write tasks to
- * level n+1, i.e. only two levels at a time are supported. The actual number
- * is in this class only used as a halting criteria, but a thread may use
- * the information.
- *
- * For more information on what the depth-levels are good for see the comments
- * for interface Queue.
- *
- * This code is in the public domain.
- *
- * @author Andreas Hess <andreas.hess at ucd.ie>, 01/02/2003
- *
- */
+import java.util.Iterator;
+import java.util.Map;
 
 public class ThreadController {
-
-	/**
-	 * current level (see interface Queue for details on levels)
-	 */
-	int level;
-
-	/**
-	 * maximum depth level allowed
-	 * -1 if be unlimited
-	 */
-	//int maxLevel;
-
-	/**
-	 * maximum number of parallel threads
-	 * -1 if unlimited
-	 */
+	//maximum number of parallel threads
 	int maxThreads;
 
 	/**
@@ -52,162 +19,122 @@ public class ThreadController {
 	MessageReceiver receiver;
 
 	/**
-	 * The class of the threads created by this ThreadController
-	 * This class is expected to be a subtype of ControllableThread.
-	 */
-	Class threadClass;
-
-	/**
 	 * A unique synchronized counter
 	 */
 	int counter;
 
-	/**
-	 * Number of currently running threads
-	 * This value is handed to the threads as an id, so note that the thread
-	 * id is not unique, but is always in the range 0...maxThreads-1
-	 */
+	// Number of currently running threads
 	int nThreads;
-
-	/**
-	 * Constructor that intializes the instance variables
-	 * The queue may already contain some tasks.
-	 * If _maxThreads > 0, _maxThreads threads are started immediately.
-	 * If _tasks.size(_level) > _maxThreads == -1, then only
-	 * _tasks.size(_level) threads are started. Note that this includes
-	 * the case where _maxThreads == -1, therefore even if the number of
-	 * allowed threads is unlimited, only a finite number of threads are
-	 * started.
-	 */
-	public ThreadController(Class _threadClass,
-							int _maxThreads,
-							int _maxLevel,
-							ObjCrawlerQueue _urls,
-							//int _level,
-							MessageReceiver _receiver)
-		throws InstantiationException, IllegalAccessException {
-		threadClass = _threadClass;
-		maxThreads = _maxThreads;
-		//maxLevel = _maxLevel;
-		urlQueues = _urls;
-		//level = _level;
-		receiver = _receiver;
-		counter = 0;
-		nThreads = 0;
-		startThreads();
-	}
+        
+        //
+        Map<Integer, ControllableThread> threads;
 
 	
+	public ThreadController(int _maxThreads,String[] seeds)//, MessageReceiver _receiver)
+		throws InstantiationException, IllegalAccessException {
+		//threadClass = _threadClass;
+		maxThreads = _maxThreads;
+		//receiver = _receiver;
+		counter = 0;
+		nThreads = 0;
+                for (String seed : seeds) {
+                    urlQueues.addNewGatheredURL(seed);
+                }
+		createThreads();
+	}
+        
+        private synchronized void createThreads() //call it just one time in the start of the program
+		throws InstantiationException, IllegalAccessException {
+		for (int n = 0; n < maxThreads; n++) {
+			ControllableThread thread =new ControllableThread();
+                        thread.setThreadController(this);
+			thread.setMessageReceiver(receiver);   ////////////////////////////////??????
+			thread.setQueue(urlQueues.queues.get(n));
+			thread.setId(nThreads++);
+                        threads.put(n, thread);
+		}
+                nThreads= this.divideSeeds();
+                for (int n = 0; n < maxThreads; n++) 
+                {
+                    threads.get(n).start();
+                }
+                    
+	}
+        
+        //divide the first seeds among the threads
+        private int divideSeeds(){ 
+            int filled=0,avg=urlQueues.getGatheredSize()/maxThreads;
+            Iterator<String> iter = urlQueues.gatheredURLs.iterator();
+            if(avg<1) { //number of threads greater than number of seeds 
+                for(int i=0;i<urlQueues.getGatheredSize();i++){
+                    moveUrlFromControllerToThread(iter,i);
+                    filled++;
+                }
+            }
+            else { //put avg number of urls in the first (maxThreads-1) and the rest of them in the last one
+                int i;
+                for(i=0;i<maxThreads-1;i++){
+                    for(int j=0;j<avg;j++){
+                        moveUrlFromControllerToThread(iter,i);
+                    }         
+                }
+                for(int j=0;j<urlQueues.getGatheredSize();j++){
+                       moveUrlFromControllerToThread(iter,i);
+                }     
+                filled=maxThreads;
+            }
+            return filled;
+        }
+        
+        public synchronized boolean finished_AddnewUrls(int threadId)
+        {
+            return fillThreadQueue(threadId);
+        }
+        
+        private boolean fillThreadQueue(int threadId)
+        {
+            int avgToHaveInThrd=urlQueues.gatheredURLs.size()/maxThreads;
+            Iterator<String> iter = urlQueues.gatheredURLs.iterator();
+            for (int n = 0; n < avgToHaveInThrd && iter.hasNext()==true; n++) {
+                moveUrlFromControllerToThread(iter,threadId);
+            } 
+            return true;
+        }
+        private void moveUrlFromControllerToThread(Iterator<String> iter,int threadId)
+        {
+            String temp=iter.toString();
+            urlQueues.queues.get(threadId).addLast(temp);
+            iter.next();
+            iter.remove();
+        }
+        
 	public synchronized int getUniqueNumber() {
 		return counter++;
 	}
 
-	/**
-	 * Adjust number of allowed threads and start new threads if possible
-	 */
-	public synchronized void setMaxThreads(int _maxThreads)
-		throws InstantiationException, IllegalAccessException {
-		maxThreads = _maxThreads;
-		startThreads();
-	}
-
-	/**
-	 * Get number of maximum allowed threads
-	 */
 	public int getMaxThreads() {
 		return maxThreads;
 	}
 
-	/**
-	 * Get number of maximum level
-	 */
-	/*public int getMaxLevel() {
-		return maxLevel;
-	}*/
-
-	/**
-	 * Get number of currently running threads
-	 */
 	public int getRunningThreads() {
 		return nThreads;
 	}
-
-	/**
-	 * Called by a thread to tell the controller that it is about to stop.
-	 * The threadId is handed over to the MessageReceiver.
-	 * If this was the last running thread it means that one level of the
-	 * queue has been completed. In this case, increment the level (if
-	 * allowed) and start new threads.
-	 */
-        public synchronized boolean finished_AddnewUrls(int threadId)
+ 
+        public String pop(int threadID)
         {
-            //To implement
-            return false;
+            return (String)urlQueues.pop(threadID);
         }
-	/*public synchronized void finished(int threadId) {
-		//nThreads--;
-		receiver.finished(threadId);
-		if (nThreads == 0) {
-			level++;
-			if (level > maxLevel) {
-				receiver.finishedAll();
-				return;
-			}
-			// debug
-			// System.err.println("new level " + level);
-			// if no tasks in queue we're don
-			if (tasks.getQueueSize(level) == 0) {
-				receiver.finishedAll();
-				return;
-			}
-			try {
-				startThreads();
-			} catch (InstantiationException e) {
-				// Something has gone wrong on the way, because if it hadn't
-				// worked at all we wouldn't be here. Anyway, we can do
-				// nothing about it, so we just quit instead of moving to
-				// a new level.
-			} catch (IllegalAccessException e) {
-				// Something has gone wrong on the way, because if it hadn't
-				// worked at all we wouldn't be here. Anyway, we can do
-				// nothing about it, so we just quit instead of moving to
-				// a new level.
-			}
-		}
-	}*/
-
-	/**
-	 * Start the maximum number of allowed threads
-	 */
-	public synchronized void startThreads()
-		throws InstantiationException, IllegalAccessException {
-		// Start m threads
-		// For more information on where m comes from see comment on
-		// the constructor.
-		int m = maxThreads ;//- nThreads;
-                
-		/*int ts = urls.getQueueSize(level);
-		if (ts < m || maxThreads == -1) {
-			m = ts;
-		}*/
-                
-		// debug
-		// System.err.println(m + " " + maxThreads + " " + nThreads + " " + ts);
-		// Create some threads
-		for (int n = 0; n < m; n++) {
-			ControllableThread thread =
-				(ControllableThread) threadClass.newInstance();
-			thread.setThreadController(this);
-			thread.setMessageReceiver(receiver);   ////////////////////////////////??????
-			//thread.setLevel(level);
-			thread.setQueue(urlQueues.queues.get(n));
-			thread.setId(nThreads++);
-			thread.start();
-		}
-	}
         
-        public Object pop(int threadID)
+        public void addNewUrl(String Url)
         {
-            return urlQueues.pop(threadID);
+            //search for the Url in the processed URLs (in database) and in the gatherd Urls (in the set) 
+            //if not exist add it to the gathered
+            boolean found; //after searching in the database
+            found=urlQueues.searchGatheredURL(Url);
+            if(!found) {
+                urlQueues.addNewGatheredURL(Url);
+            }
+            
         }
+    
 }

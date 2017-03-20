@@ -1,64 +1,49 @@
 package webcrawler;
-import java.net.URL;
 import java.util.*;
 
-/**
- * Simple "reference" implementation of the queue interface
- * In addition to the interface, an object "data" is supported
- * for carrying additional data over threads.
- * By default, the queue supports 4 levels and an unlimited
- * number of elements. The number of elements is unlimited when
- * set to -1. A limited number of elements and a different
- * number of levels can be specified in the appropriate constructors.
- *
- * This code is in the public domain.
- *
- * @author Andreas Hess <andreas.hess at ucd.ie>, 11/02/2003
- * 
- */
 
 public class ObjCrawlerQueue implements CrawlerQueue {
 
-	Object data;
-	Set gatheredURLs;
-	Set processedURLs;
-	Map<Integer, LinkedList> queues; ///these each queue is for one thread ==> take from the set for this queue
-	int mx; //number of the max queues or threads
-	int nQ; //number of the current queues 
-
-	public synchronized void setData(Object o) {
-		data = o;
-	}
-
-	public synchronized Object getData() {
-		return data;
-	}
+	protected Set<String> gatheredURLs;
+	//Set processedURLs;
+	protected Map<Integer, LinkedList> queues; ///these each queue is for one thread ==> take from the set for this queue
+	protected int mx; //number of the max queues or threads
+	protected int nQ; //number of the current queues 
 
 	public ObjCrawlerQueue(int _mx) {
-		//nq = _nq;
 		mx = _mx;
                 nQ=0;////////////////////////////////////////////
-		queues = new HashMap<Integer, LinkedList>();
+		queues = new HashMap<>();
 		for (int n = 0; n < mx; n++) {
-			queues.put(n,new LinkedList()) ;
+			queues.put(n,new LinkedList<>()) ;
 		}
+                gatheredURLs=new LinkedHashSet<>();
 	}
 
 	public ObjCrawlerQueue() { //defualt constructor with max num of threads and queues=50
-		//nq = _nq;
 		mx = 50;
                 nQ=0;////////////////////////////////////////////
-		queues = new HashMap<Integer, LinkedList>();
+		queues = new HashMap<>();
 		for (int n = 0; n < mx; n++) {
 			queues.put(n,new LinkedList()) ;
 		}
+                gatheredURLs=new LinkedHashSet<>();
 	}
 
 
         @Override
-	public Set getGatheredURLs() {
+	public Set<String> getGatheredURLs() {
 		return gatheredURLs;
 	}
+        
+        public boolean addNewGatheredURL(String url){
+            return gatheredURLs.add(url);
+        }
+        
+            
+        public boolean searchGatheredURL(String url){
+            return gatheredURLs.contains(url);
+        }
 
 	/*public Set getProcessedElements() {
 		return processedElements;
