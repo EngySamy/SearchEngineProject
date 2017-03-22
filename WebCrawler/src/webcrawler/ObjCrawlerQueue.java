@@ -2,11 +2,11 @@ package webcrawler;
 import java.util.*;
 
 
-public class ObjCrawlerQueue implements CrawlerQueue {
+public class ObjCrawlerQueue {
 
 	protected Set<String> gatheredURLs;
 	//Set processedURLs;
-	protected Map<Integer, LinkedList> queues; ///these each queue is for one thread ==> take from the set for this queue
+	protected Map<Integer, LinkedList<String>> queues; ///these each queue is for one thread ==> take from the set for this queue
 	protected int mx; //number of the max queues or threads
 	protected int nQ; //number of the current queues 
 
@@ -15,9 +15,9 @@ public class ObjCrawlerQueue implements CrawlerQueue {
                 nQ=0;////////////////////////////////////////////
 		queues = new HashMap<>();
 		for (int n = 0; n < mx; n++) {
-			queues.put(n,new LinkedList<>()) ;
+			queues.put(n,new LinkedList<String>()) ;
 		}
-                gatheredURLs=new LinkedHashSet<>();
+                gatheredURLs=new LinkedHashSet<String>();
 	}
 
 	public ObjCrawlerQueue() { //defualt constructor with max num of threads and queues=50
@@ -30,26 +30,20 @@ public class ObjCrawlerQueue implements CrawlerQueue {
                 gatheredURLs=new LinkedHashSet<>();
 	}
 
-
-        @Override
-	public Set<String> getGatheredURLs() {
+	public synchronized Set<String> getGatheredURLs() {
 		return gatheredURLs;
 	}
         
-        public boolean addNewGatheredURL(String url){
+        public synchronized boolean addNewGatheredURL(String url){
             return gatheredURLs.add(url);
         }
         
             
-        public boolean searchGatheredURL(String url){
+        public synchronized boolean searchGatheredURL(String url){
             return gatheredURLs.contains(url);
         }
 
-	/*public Set getProcessedElements() {
-		return processedElements;
-	}*/
 
-        @Override
 	public int getQueueSize(Integer threadId) {
 		if (threadId < 0 || threadId >= nQ)
 			return 0;
@@ -61,8 +55,7 @@ public class ObjCrawlerQueue implements CrawlerQueue {
 		return processedElements.size();
 	}*/
 
-        @Override
-	public int getGatheredSize() {
+	public synchronized int getGatheredSize() {
 		return gatheredURLs.size();
 	}
 
@@ -71,24 +64,21 @@ public class ObjCrawlerQueue implements CrawlerQueue {
 		mx = elements;
 	}*/
 
-        @Override
-	public synchronized Object pop(Integer threadId) {   //pop from a queue of certain thread       
-		if (queues.get(threadId)==null)
-			return null;
+	public String pop(Integer threadId) {   //pop from a queue of certain thread       
+		if (queues.get(threadId).isEmpty())
+                    return null;
 		else
-			return queues.get(threadId).removeFirst();
+                    return queues.get(threadId).removeFirst();
 	}
 
-        @Override
-	public synchronized boolean push(Object URL, Integer threadId) {
+	public boolean push(String URL, Integer threadId) {
 		if (queues.get(threadId)==null)
 			return false;
 		queues.get(threadId).addLast(URL);
 		return true;
 	}
 
-        @Override
-	public synchronized void clear() {
+	public void clear() {
 		for (int n = 0; n < nQ; n++)
 			queues.get(n).clear();
 	}
