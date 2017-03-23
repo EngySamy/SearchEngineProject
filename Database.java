@@ -1,8 +1,11 @@
 package stemmer;
 
+import java.io.IOException;
+import java.io.Reader;
 import java.sql.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.io.IOUtils;
 
 public class Database {
     // JDBC driver name and database URL
@@ -15,6 +18,9 @@ public class Database {
    
    Connection conn = null;
    Statement stmt = null;
+   
+   int lastRetreival;
+   Link[] links;
    
    void connect() 
    {
@@ -45,6 +51,7 @@ public class Database {
        {
            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
        }
+       lastRetreival=0;
     }
     void createTables()
     {
@@ -209,14 +216,46 @@ public class Database {
         return val;
     }
     
-    String SelectURL () throws SQLException
+    Link[] SelectURL () throws SQLException, IOException
     {
-       String Query= "SELECT Document FROM SearchEngine.Websites;" ;
+       //String Query= "SELECT Document FROM SearchEngine.Websites;" ;
+       int startingRow=lastRetreival*100;
+       String Query= "SELECT * FROM SearchEngine.Websites limit "+startingRow+", 100;" ;
+       lastRetreival++;
+       
+       //System.out.println(Query);
+
        ResultSet rs = null;            
        try 
        {
-         Statement stmt = conn.createStatement();
-         rs = stmt.executeQuery(Query);
+            Statement stmt = conn.createStatement();
+            rs = stmt.executeQuery(Query);
+
+            //create new link object
+            links=new Link[100];
+            rs.first();
+            for(int i=0;i<100;i++)
+            {
+
+               //get id
+               int id=rs.getInt(0);
+               links[i].ID=id;
+               //get URL
+               String url=rs.getString(2);
+               links[i].URL=url;
+               //get document
+               Reader in = rs.getCharacterStream(2); //column number ?
+               String clobValue = null;
+               if (!rs.wasNull())
+               {
+                   // process whatever the Reader returns, e.g. using Apache Commons IO
+                   clobValue = IOUtils.toString(in);
+               }
+               in.close();
+               links[i].Document=clobValue;
+
+               rs.next();
+        }
 
        } 
        catch (SQLException ex) 
@@ -230,6 +269,6 @@ public class Database {
         {
             val = rs.getString("Document");
         }
-        return val;
+        return links;
     }
 }
