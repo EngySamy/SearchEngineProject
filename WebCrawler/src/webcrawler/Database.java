@@ -28,7 +28,7 @@ public class Database {
              conn = DriverManager.getConnection(DB_URL, USER, PASS);
              //PreparedStatement ps = conn.prepareStatement("CREATE DATABASE SearchEngine");
              //int result = ps.executeUpdate();
-             System.out.println("created database successfully...");
+             //System.out.println("created database successfully...");
          }
          catch(Exception e)
          {
@@ -48,8 +48,8 @@ public class Database {
             
           String URLTable= "CREATE TABLE SearchEngine.Websites " +
                           "(Link_ID BIGINT NOT NULL AUTO_INCREMENT, " +
-                          " Link VARCHAR(255) UNIQUE, " + 
-                          " Document LONGTEXT, " +
+                          " Link VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL UNIQUE , " + 
+                          " Document LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL , " +
                           " PRIMARY KEY ( Link_ID ))"; 
 
 
@@ -234,6 +234,11 @@ public class Database {
        {
             Statement st = conn.createStatement();
             rs = st.executeQuery(Query);
+            
+            //PreparedStatement ps = conn.prepareStatement(Query);
+            //ps.setString(1, url);
+            //rs=ps.executeQuery(Query);
+            
              while (rs.next()) {
                ++count;
                // Get data from the current row and use it

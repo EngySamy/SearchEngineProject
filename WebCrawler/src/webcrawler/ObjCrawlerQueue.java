@@ -21,17 +21,17 @@ public class ObjCrawlerQueue {
 	}
 
 	public ObjCrawlerQueue() { //defualt constructor with max num of threads and queues=50
-		mx = 50;
-                nQ=0;////////////////////////////////////////////
-		queues = new HashMap<>();
-		for (int n = 0; n < mx; n++) {
-			queues.put(n,new LinkedList()) ;
-		}
-                gatheredURLs=new LinkedHashSet<>();
+            mx = 50;
+            nQ=0;////////////////////////////////////////////
+            queues = new HashMap<>();
+            for (int n = 0; n < mx; n++) {
+                    queues.put(n,new LinkedList()) ;
+            }
+            gatheredURLs=new LinkedHashSet<>();
 	}
 
 	public synchronized Set<String> getGatheredURLs() {
-		return gatheredURLs;
+            return gatheredURLs;
 	}
         
         public synchronized boolean addNewGatheredURL(String url){

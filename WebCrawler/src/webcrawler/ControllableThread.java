@@ -3,12 +3,13 @@ package webcrawler;
 //import com.google.common.hash.BloomFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URL;
 import java.util.LinkedList;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
+import robottxt.RobotExclusion;
 
 public class ControllableThread extends Thread {
 	protected Integer id;
@@ -78,34 +79,42 @@ public class ControllableThread extends Thread {
                 // need http protocol                
                 //String newUrl=o.toString();
                 if(newUrl != null &&  newUrl.length()!= 0) {
-                    doc = Jsoup.connect(newUrl).get();
-                    // get page title
-                    String title = doc.title();
-                    System.out.println("title : " + title);
-                    // get all links
-                    Elements links = doc.select("a[href]");                    
-                    PrintWriter outt=new PrintWriter("thread"+id+".txt");
-                    int y=0;
-                    for (Element link : links) {
-                        y++;
-                        String abs=link.absUrl("href");
-                        if (abs == null || abs.length() != 0) {
-                            
-                            System.out.println("absolute link(before process it) : " + abs );
-                            ///processURL ///remove bookmarks and check them between each others
-                            abs=processURL(abs);
-                            tc.addNewUrl(abs);  
-                            //for debugging
-                            System.out.println(y);
-                            // get the value from href attribute
-                            //System.out.println("\nlink : "  + link.attr("href"));
-                            System.out.println("absolute link : " + abs );
-                            //System.out.println("text : " + link.text());
-                        }  
+                    RobotExclusion robotExclusion = new RobotExclusion();
+                    String userAgentString="Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36";
+                    URL urll = new URL(newUrl);
+                    if (robotExclusion.allows(urll, userAgentString)) 
+                    {
+                        // do something with url
+                        doc = Jsoup.connect(newUrl).get();
+                        // get page title
+                        String title = doc.title();
+                        System.out.println("title : " + title);
+                        // get all links
+                        Elements links = doc.select("a[href]");                    
+                        PrintWriter outt=new PrintWriter("thread"+id+".txt");
+                        int y=0;
+                        for (Element link : links) {
+                            y++;
+                            String abs=link.absUrl("href");
+                            if (abs == null || abs.length() != 0) {
+
+                                System.out.println("absolute link(before process it) : " + abs+" from thread "+id );
+                                ///processURL ///remove bookmarks and check them between each others
+                                abs=processURL(abs);
+                                tc.addNewUrl(abs);  
+                                //for debugging
+                                System.out.println(y);
+                                // get the value from href attribute
+                                //System.out.println("\nlink : "  + link.attr("href"));
+                                System.out.println("absolute link : " + abs );
+                                //System.out.println("text : " + link.text());
+                            }  
+                        }
+                        tc.incTotalLinks();
+                        if(DB.SearchURL(newUrl))
+                            DB.InsertURL(newUrl, doc.toString());
+                    
                     }
-                    tc.incTotalLinks();
-                    if(DB.SearchURL(newUrl))
-                        DB.InsertURL(newUrl, doc.toString());
                     
                 }
             } catch (IOException e) {
