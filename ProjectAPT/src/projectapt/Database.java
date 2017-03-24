@@ -14,8 +14,8 @@ public class Database {
    String DB_URL = "jdbc:mysql://localhost:3306/mysql?zeroDateTimeBehavior=convertToNull";
 
    //  Database credentials
-   String USER = "Mennah";
-   String PASS = "1371994";
+   String USER = "root";
+   String PASS = "EngySamyElShorbagy";
    
    Connection conn = null;
    Statement stmt = null;
@@ -103,6 +103,18 @@ public class Database {
            
             PreparedStatement ps6 = conn.prepareStatement(InfoTable);
             ps6.executeUpdate();
+
+            String URLBackupTable= "CREATE TABLE SearchEngine.URLBackup " +
+                          "(Link_ID BIGINT NOT NULL AUTO_INCREMENT, " +
+                          " Link VARCHAR(255) UNIQUE, " + 
+                          " PRIMARY KEY ( Link_ID ))"; 
+
+
+           PreparedStatement ps7 = conn.prepareStatement(URLBackupTable);
+           ps7.executeUpdate();
+
+           System.out.println("Created URLBackup table in given database...");
+            
             System.out.println("Created Information table in given database...");
         }
         catch(SQLException se)
@@ -324,22 +336,55 @@ public class Database {
             
              while (rs.next()) {
                ++count;
-               // Get data from the current row and use it
            } 
        } 
-       
-       /*try 
-       {
-         PreparedStatement ps = conn.prepareStatement(Query);
-         ps.setString(1, url);
-         ps.executeUpdate();
-       } */
-       
-       catch (SQLException ex) 
+        catch (SQLException ex) 
        {
          Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
        }
        
        return count == 0; 
+    }
+     
+    public void clearBackup(){
+       String Query="DELETE FROM SearchEngine.URLBackup";
+
+       try {
+            PreparedStatement ps = conn.prepareStatement(Query);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+           Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public void newBackup(String URL){
+        String Query= "INSERT INTO SearchEngine.URLBackup " +
+                     "(Link)" +
+                     "VALUES" +
+                     "(?);"; 
+        try 
+        {
+            PreparedStatement ps = conn.prepareStatement(Query);
+            ps.setString(1, URL);
+            ps.executeUpdate();
+        } 
+        catch (SQLException ex) 
+        {
+            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    public ResultSet loadBackup(){
+        String Query="SELECT Link FROM SearchEngine.URLBackup";
+        ResultSet rs =null;  
+        try 
+        {
+             Statement st = conn.createStatement();
+             rs = st.executeQuery(Query);
+        } 
+        catch (SQLException ex) 
+        {
+          Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return rs;
     }
 }

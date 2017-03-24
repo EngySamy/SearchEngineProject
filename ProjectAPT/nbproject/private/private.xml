@@ -3,13 +3,10 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/E:/APT%20New%20Labs/ProjectAPT/src/projectapt/Database.java</file>
-            <file>file:/E:/APT%20New%20Labs/ProjectAPT/src/projectapt/Stemmer.java</file>
-            <file>file:/E:/APT%20New%20Labs/ProjectAPT/src/projectapt/stopWordsRemover.java</file>
-            <file>file:/E:/APT%20New%20Labs/ProjectAPT/src/projectapt/ProjectAPT.java</file>
-            <file>file:/E:/APT%20New%20Labs/ProjectAPT/src/projectapt/Word.java</file>
-            <file>file:/E:/APT%20New%20Labs/ProjectAPT/src/projectapt/StringStream.java</file>
-            <file>file:/E:/APT%20New%20Labs/ProjectAPT/src/projectapt/Parser.java</file>
+            <file>file:/E:/CMP%203rd_2nd/APT/Project/phase1/ProjectAPT/src/projectapt/Database.java</file>
+            <file>file:/E:/CMP%203rd_2nd/APT/Project/phase1/ProjectAPT/src/webcrawler/ThreadController.java</file>
+            <file>file:/E:/CMP%203rd_2nd/APT/Project/phase1/ProjectAPT/src/webcrawler/ControllableThread.java</file>
+            <file>file:/E:/CMP%203rd_2nd/APT/Project/phase1/ProjectAPT/src/projectapt/ProjectAPT.java</file>
         </group>
     </open-files>
 </project-private>

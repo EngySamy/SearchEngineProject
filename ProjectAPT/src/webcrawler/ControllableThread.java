@@ -41,13 +41,10 @@ public class ControllableThread extends Thread {
         
     @Override
 	public void run() {
-            boolean again=true;
-            //for testing
-            int c=0,local;
+            int c=0;
             while(true)
             {
                 // pop new urls from the queue until queue is empty
-                local=0;
                 for (String newURL = tc.pop(id);
                          newURL != null;
                          newURL = tc.pop(id)) {
@@ -58,85 +55,78 @@ public class ControllableThread extends Thread {
                         System.out.println("Total gathered links now are "+c);
                         if(c>=ThreadController.MAX_Links )
                             break;
-                }
-                // Notify the ThreadController that we're done
-                //c=tc.updateTotalLinks(local);
-                
-                
+                }              
                 if(c>=ThreadController.MAX_Links )
                     break;
                 else
-                    again=tc.fillThreadQueue(id);
-                
-                
+                    tc.fillThreadQueue(id);   
             }
 		
 	}
 
 	
-	public void process(String newUrl){
-            Document doc;
-            try {
-                // need http protocol                
-                //String newUrl=o.toString();
-                if(newUrl != null &&  newUrl.length()!= 0) {
-                    RobotExclusion robotExclusion = new RobotExclusion();
-                    String userAgentString="Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36";
-                    URL urll = new URL(newUrl);
-                    if (robotExclusion.allows(urll, userAgentString)) 
-                    {
-                        // do something with url
+    public void process(String newUrl){
+        Document doc;
+        try {             
+            if(newUrl != null &&  newUrl.length()!= 0) {
+                RobotExclusion robotExclusion = new RobotExclusion();
+                String userAgentString="Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36";
+                URL urll = new URL(newUrl);
+                if (robotExclusion.allows(urll, userAgentString)) 
+                {
+                    try{
                         doc = Jsoup.connect(newUrl).get();
-                        // get page title
-                        String title = doc.title();
-                        System.out.println("title : " + title);
                         // get all links
                         Elements links = doc.select("a[href]");                    
-                        PrintWriter outt=new PrintWriter("thread"+id+".txt");
                         int y=0;
                         for (Element link : links) {
                             y++;
                             String abs=link.absUrl("href");
                             if (abs == null || abs.length() != 0) {
 
-                                System.out.println("absolute link(before process it) : " + abs+" from thread "+id );
+                                //System.out.println("absolute link(before process it) : " + abs+" from thread "+id );
                                 ///processURL ///remove bookmarks and check them between each others
                                 abs=processURL(abs);
                                 tc.addNewUrl(abs);  
                                 //for debugging
-                                System.out.println(y);
-                                // get the value from href attribute
-                                //System.out.println("\nlink : "  + link.attr("href"));
-                                System.out.println("absolute link : " + abs );
-                                //System.out.println("text : " + link.text());
+                                //System.out.println(y);
+                                //System.out.println("absolute link : " + abs );
                             }  
                         }
                         tc.incTotalLinks();
-                        if(DB.SearchURL(newUrl))
-                            DB.InsertURL(newUrl, doc.toString());
-                    
+                        if(DB.SearchURL(newUrl)) /////////////CHANGE DOC   ////// JUST FOR TESTING
+                            DB.InsertURL(newUrl, "Hii");
                     }
-                    
+                    catch(Exception e)
+                    {
+                        System.out.println("Ignore this link .. ");
+                    }
+                    /*catch(javax.net.ssl.SSLHandshakeException j)
+                    {
+                        System.out.println("Ignore this link .. ");
+                    }
+                    //sun.security.validator.ValidatorException
+                      */      
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
 
-    
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+    }
         
-         protected String processURL(String Url) { //to remove bookmark from the link ==>  www.eee.com/rr/ = www.eee.com/rr/#e1
-            int endPos;
-            if (Url.indexOf("?") > 0) {
-                endPos = Url.indexOf("?");
-            } else if (Url.indexOf("#") > 0) {
-                endPos = Url.indexOf("#");
-            } else {
-                endPos = Url.length();
-            }
+    protected String processURL(String Url) { //to remove bookmark from the link ==>  www.eee.com/rr/ = www.eee.com/rr/#e1
+       int endPos;
+       if (Url.indexOf("?") > 0) {
+           endPos = Url.indexOf("?");
+       } else if (Url.indexOf("#") > 0) {
+           endPos = Url.indexOf("#");
+       } else {
+           endPos = Url.length();
+       }
 
-            return Url.substring(0, endPos);
-        }
+       return Url.substring(0, endPos);
+   }
         
         
 }
