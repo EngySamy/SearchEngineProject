@@ -84,36 +84,40 @@ public class ControllableThread extends Thread {
                     URL urll = new URL(newUrl);
                     if (robotExclusion.allows(urll, userAgentString)) 
                     {
-                        // do something with url
-                        doc = Jsoup.connect(newUrl).get();
-                        // get page title
-                        String title = doc.title();
-                        System.out.println("title : " + title);
-                        // get all links
-                        Elements links = doc.select("a[href]");                    
-                        PrintWriter outt=new PrintWriter("thread"+id+".txt");
-                        int y=0;
-                        for (Element link : links) {
-                            y++;
-                            String abs=link.absUrl("href");
-                            if (abs == null || abs.length() != 0) {
+                        try{
+                            doc = Jsoup.connect(newUrl).get();
+                            // get page title
+                            String title = doc.title();
+                            System.out.println("title : " + title);
+                            // get all links
+                            Elements links = doc.select("a[href]");                    
+                            PrintWriter outt=new PrintWriter("thread"+id+".txt");
+                            int y=0;
+                            for (Element link : links) {
+                                y++;
+                                String abs=link.absUrl("href");
+                                if (abs == null || abs.length() != 0) {
 
-                                System.out.println("absolute link(before process it) : " + abs+" from thread "+id );
-                                ///processURL ///remove bookmarks and check them between each others
-                                abs=processURL(abs);
-                                tc.addNewUrl(abs);  
-                                //for debugging
-                                System.out.println(y);
-                                // get the value from href attribute
-                                //System.out.println("\nlink : "  + link.attr("href"));
-                                System.out.println("absolute link : " + abs );
-                                //System.out.println("text : " + link.text());
-                            }  
+                                    System.out.println("absolute link(before process it) : " + abs+" from thread "+id );
+                                    ///processURL ///remove bookmarks and check them between each others
+                                    abs=processURL(abs);
+                                    tc.addNewUrl(abs);  
+                                    //for debugging
+                                    System.out.println(y);
+                                    // get the value from href attribute
+                                    //System.out.println("\nlink : "  + link.attr("href"));
+                                    System.out.println("absolute link : " + abs );
+                                    //System.out.println("text : " + link.text());
+                                }  
+                            }
+                            tc.incTotalLinks();
+                            if(DB.SearchURL(newUrl))
+                                DB.InsertURL(newUrl, doc.toString());
                         }
-                        tc.incTotalLinks();
-                        if(DB.SearchURL(newUrl))
-                            DB.InsertURL(newUrl, doc.toString());
-                    
+                        catch(org.jsoup.HttpStatusException e)
+                        {
+                            System.out.println("Ignore this link .. ");
+                        }
                     }
                     
                 }
