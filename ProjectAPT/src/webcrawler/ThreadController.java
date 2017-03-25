@@ -15,7 +15,7 @@ import projectapt.Database;
 public class ThreadController {
     //maximum number of parallel threads
     public static final int MAX_Links = 900;
-    static final long NUM_PERIOD =1000;
+    static final long NUM_PERIOD =10;
     int savedStates;
     int maxThreads;
     AtomicInteger finishedThreads;
@@ -65,7 +65,7 @@ public class ThreadController {
         for (int n = 0; n < maxThreads; n++) {
             ControllableThread thread =new ControllableThread();
             thread.setThreadController(this);
-            thread.setQueue(urlQueues.queues.get(n));
+            //thread.setQueue(urlQueues.queues.get(n));
             thread.setId(n);
             thread.setDB(DB);
             threads.put(n, thread);
@@ -93,20 +93,23 @@ public class ThreadController {
         return finishedThreads.get();
     }
     
-    public synchronized boolean fillThreadQueue(int threadId)
+    public synchronized String TakeURLToFetch(int threadId)
     {
-        int avgToHaveInThrd=urlQueues.gatheredURLs.size()/maxThreads;
-        if(avgToHaveInThrd<1)
-            avgToHaveInThrd=1;
+        //double avgToHaveInThrd=Math.ceil(urlQueues.gatheredURLs.size()/(double)maxThreads);
+        //if(avgToHaveInThrd<1)
+          //  avgToHaveInThrd=1;
         
-        int num=avgToHaveInThrd;
+        //int num=(int)avgToHaveInThrd;
         Iterator<String> iter=urlQueues.gatheredURLs.iterator();
-        int n=0;
-        for ( n = 0; n < num && iter.hasNext()==true; n++) {
-            urlQueues.queues.get(threadId).addLast(iter.next());
+        //int n=0;
+        //for ( n = 0; n < num && iter.hasNext()==true; n++) {
+        if(iter.hasNext()){
+            String st=iter.next();
             iter.remove();
+            return st;
         } 
-        return true;        
+        return "";
+        //return true;
     }
     
     public void CheckState(){
@@ -118,13 +121,20 @@ public class ThreadController {
     }
     
     public synchronized void saveState(){
-        DB.clearBackup();
-        int num=this.urlQueues.getGatheredSize();
-        Iterator<String> iter=urlQueues.gatheredURLs.iterator();
-        int n;
-        for ( n = 0; n < num && iter.hasNext()==true; n++) {
-            DB.newBackup(iter.next());
-        } 
+        
+        try {
+            DB.clearBackup();
+            int num=this.urlQueues.getGatheredSize();
+            Iterator<String> iter=urlQueues.gatheredURLs.iterator();
+            int n;
+            for ( n = 0; n < num && iter.hasNext()==true; n++) {
+                DB.newBackup(iter.next());
+            } 
+        } catch(Exception e)
+        {
+            System.out.println("Escape this link");
+        }
+        
         savedStates++;        
     }
     public synchronized boolean loadSavedUrls(){
@@ -156,9 +166,9 @@ public class ThreadController {
         return maxThreads;
     }
  
-    public String pop(int threadID) {
+    /*public String pop(int threadID) {
         return urlQueues.pop(threadID);
-    }
+    }*/
     
     public synchronized void addNewUrl(String Url)
     {

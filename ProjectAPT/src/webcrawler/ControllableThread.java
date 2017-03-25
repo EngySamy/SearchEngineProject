@@ -38,9 +38,9 @@ public class ControllableThread extends Thread {
 		id = _id;
 	}
 	
-	public void setQueue(LinkedList<String> _queue) {  /////////////////////////////
+	/*public void setQueue(LinkedList<String> _queue) {  /////////////////////////////
 		queue = _queue;
-	}
+	}*/
         
 	public void setThreadController(ThreadController _tc) {
 		tc = _tc;
@@ -58,28 +58,28 @@ public class ControllableThread extends Thread {
 	public void run() {
             int c=0;
             URL u;
-            while(true)
+            String uu=tc.TakeURLToFetch(id);
+            while(uu!=null &&!uu.equals(""))
             {
                 // pop new urls from the queue until queue is empty
-                for (String newURL = tc.pop(id);
-                         newURL != null;
-                         newURL = tc.pop(id)) {
+                //for (String newURL = tc.pop(id);
+                  //       newURL != null;
+                    //     newURL = tc.pop(id)) {
                         // Process the newTask
                         System.out.println("I'm thread "+id);
-                        process(newURL);
+                        process(uu);
                         c=tc.getTotalLinks();
                         System.out.println("Total gathered links now are "+c);
                         if(c>=ThreadController.MAX_Links )
                             break;
-                }              
+                //}              
                 if(c>=ThreadController.MAX_Links )
                     break;
                 else
-                    tc.fillThreadQueue(id);   
+                    uu=tc.TakeURLToFetch(id);   
             }
             tc.incFinishedThreads();
 	}
-
         
 	
     public void process(String newUrl){
@@ -105,18 +105,20 @@ public class ControllableThread extends Thread {
                                     //System.out.println("absolute link(before process it) : " + abs+" from thread "+id );
                                     ///processURL ///remove bookmarks and check them between each others
                                     abs=processURL(abs);
-                                    tc.addNewUrl(abs);  
+                                    if(!abs.equals(newUrl))
+                                        tc.addNewUrl(abs);  
                                     //for debugging
                                     //System.out.println(y);
                                     //System.out.println("absolute link : " + abs );                                 
                                 }
 
-                                if(DB.SearchURL(newUrl)){ /////////////CHANGE DOC   ////// JUST FOR TESTING
-                                    DB.InsertURL(newUrl, "Hii");
-                                    tc.incTotalLinks();
-                                }
+                                
                             }
-
+                            //if(DB.SearchURL(newUrl))
+                            { /////////////CHANGE DOC   ////// JUST FOR TESTING
+                                DB.InsertURL(newUrl, "Hii");
+                                tc.incTotalLinks();
+                            }
 
                         }
                         catch(org.jsoup.HttpStatusException e )
@@ -135,7 +137,7 @@ public class ControllableThread extends Thread {
             }
         }catch (IOException e) {
             //e.printStackTrace();
-            System.out.println("!!!!!! ");
+            System.out.println("Ignore this link ..  ");
         }
     }
         

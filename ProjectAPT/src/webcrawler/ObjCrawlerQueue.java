@@ -6,7 +6,7 @@ public class ObjCrawlerQueue {
 
 	protected Set<String> gatheredURLs;
 	//Set processedURLs;
-	protected Map<Integer, LinkedList<String>> queues; ///these each queue is for one thread ==> take from the set for this queue
+	protected Map<Integer, String> queues; ///these each queue is for one thread ==> take from the set for this queue
 	protected int mx; //number of the max queues or threads
 	protected int nQ; //number of the current queues 
 
@@ -15,7 +15,7 @@ public class ObjCrawlerQueue {
                 nQ=0;////////////////////////////////////////////
 		queues = new HashMap<>();
 		for (int n = 0; n < mx; n++) {
-			queues.put(n,new LinkedList<String>()) ;
+			queues.put(n,new String()) ;
 		}
                 gatheredURLs=new LinkedHashSet<String>();
 	}
@@ -25,7 +25,7 @@ public class ObjCrawlerQueue {
             nQ=0;////////////////////////////////////////////
             queues = new HashMap<>();
             for (int n = 0; n < mx; n++) {
-                    queues.put(n,new LinkedList()) ;
+                    queues.put(n,"") ;
             }
             gatheredURLs=new LinkedHashSet<>();
 	}
@@ -44,12 +44,12 @@ public class ObjCrawlerQueue {
         }
 
 
-	public int getQueueSize(Integer threadId) {
+	/*public int getQueueSize(Integer threadId) {
 		if (threadId < 0 || threadId >= nQ)
 			return 0;
 		else
 			return queues.get(threadId).size();
-	}
+	}*/
 
 	/*public int getProcessedSize() {
 		return processedElements.size();
@@ -64,22 +64,22 @@ public class ObjCrawlerQueue {
 		mx = elements;
 	}*/
 
-	public String pop(Integer threadId) {   //pop from a queue of certain thread       
+	/*public String pop(Integer threadId) {   //pop from a queue of certain thread       
 		if (queues.get(threadId).isEmpty())
                     return null;
 		else
                     return queues.get(threadId).removeFirst();
-	}
+	}*/
 
-	public boolean push(String URL, Integer threadId) {
+	/*public boolean push(String URL, Integer threadId) {
 		if (queues.get(threadId)==null)
 			return false;
 		queues.get(threadId).addLast(URL);
 		return true;
-	}
+	}*/
 
 	public void clear() {
 		for (int n = 0; n < nQ; n++)
-			queues.get(n).clear();
+			queues.clear();
 	}
 }
