@@ -11,7 +11,7 @@ import org.apache.commons.io.IOUtils;
 public class Database {
     // JDBC driver name and database URL
    String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
-   String DB_URL = "jdbc:mysql://localhost:3306/mysql?zeroDateTimeBehavior=convertToNull";
+   String DB_URL = "jdbc:mysql://localhost:3306/mysql?zeroDateTimeBehavior=convertToNull&useUnicode=true&amp;characterEncode=UTF-8";
 
    //  Database credentials
    String USER = "root";
@@ -67,9 +67,9 @@ public class Database {
             
           String URLTable= "CREATE TABLE SearchEngine.Websites " +
                           "(Link_ID BIGINT NOT NULL AUTO_INCREMENT, " +
-                          " Link VARCHAR(255) UNIQUE, " + 
-                          " Document LONGTEXT, " +
-                          " PRIMARY KEY ( Link_ID ))"; 
+                          " Link TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci UNIQUE, " + 
+                          " Document LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, " +
+                          " PRIMARY KEY ( Link_ID ) CHARACTER SET utf8mb4 )"; 
 
 
            PreparedStatement ps1 = conn.prepareStatement(URLTable);
@@ -106,8 +106,8 @@ public class Database {
 
             String URLBackupTable= "CREATE TABLE SearchEngine.URLBackup " +
                           "(Link_ID BIGINT NOT NULL AUTO_INCREMENT, " +
-                          " Link VARCHAR(255) UNIQUE, " + 
-                          " PRIMARY KEY ( Link_ID ))"; 
+                          " Link TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci UNIQUE, " + 
+                          " PRIMARY KEY ( Link_ID ) CHARACTER SET utf8mb4 )"; 
 
 
            PreparedStatement ps7 = conn.prepareStatement(URLBackupTable);
@@ -327,12 +327,11 @@ public class Database {
        int count = 0; 
        try 
        {
-            Statement st = conn.createStatement();
-            rs = st.executeQuery(Query);
-            
-            //PreparedStatement ps = conn.prepareStatement(Query);
+           PreparedStatement ps = conn.prepareStatement(Query);
             //ps.setString(1, url);
-            //rs=ps.executeQuery(Query);
+            rs = ps.executeQuery();
+            //Statement st = conn.createStatement();
+            //rs = st.executeQuery(Query);
             
              while (rs.next()) {
                ++count;

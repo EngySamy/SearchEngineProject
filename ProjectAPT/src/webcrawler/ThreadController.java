@@ -14,10 +14,11 @@ import projectapt.Database;
 
 public class ThreadController {
     //maximum number of parallel threads
-    public static final int MAX_Links = 20;
-    static final long NUM_PERIOD =5;
+    public static final int MAX_Links = 100;
+    static final long NUM_PERIOD =100;
     int savedStates;
     int maxThreads;
+    AtomicInteger finishedThreads;
 
     /**
      * the task queue
@@ -45,6 +46,7 @@ public class ThreadController {
             linksTotal=new AtomicInteger(0);
             indecator=false;
             urlQueues=new ObjCrawlerQueue(maxThreads);
+            finishedThreads=new AtomicInteger(0);
             threads=new HashMap<>();
             savedStates=1;
             DB=_db;
@@ -81,6 +83,14 @@ public class ThreadController {
     
     public int getTotalLinks(){
         return linksTotal.get();
+    }
+    
+    public int incFinishedThreads(){
+        return finishedThreads.incrementAndGet();
+    }
+    
+    public int getFinishedThreads(){
+        return finishedThreads.get();
     }
     
     public synchronized boolean fillThreadQueue(int threadId)

@@ -3,8 +3,23 @@ package webcrawler;
 //import com.google.common.hash.BloomFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.LinkedList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -42,6 +57,7 @@ public class ControllableThread extends Thread {
     @Override
 	public void run() {
             int c=0;
+            URL u;
             while(true)
             {
                 // pop new urls from the queue until queue is empty
@@ -61,9 +77,10 @@ public class ControllableThread extends Thread {
                 else
                     tc.fillThreadQueue(id);   
             }
-		
+            tc.incFinishedThreads();
 	}
 
+        
 	
     public void process(String newUrl){
         Document doc;
@@ -71,47 +88,54 @@ public class ControllableThread extends Thread {
             if(newUrl != null &&  newUrl.length()!= 0) {
                 RobotExclusion robotExclusion = new RobotExclusion();
                 String userAgentString="Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36";
-                URL urll = new URL(newUrl);
-                if (robotExclusion.allows(urll, userAgentString)) 
-                {
-                    try{
-                        doc = Jsoup.connect(newUrl).get();
-                        // get all links
-                        Elements links = doc.select("a[href]");                    
-                        int y=0;
-                        for (Element link : links) {
-                            y++;
-                            String abs=link.absUrl("href");
-                            if (abs == null || abs.length() != 0) {
+                URL urll = new URL(null,newUrl,new sun.net.www.protocol.https.Handler());                       
+                if(SSLTest.testSsl(urll)==200) {       
+                    if (robotExclusion.allows(urll, userAgentString)) 
+                    {
+                        try{         
+                            doc = Jsoup.connect(newUrl).get();
+                            // get all links
+                            Elements links = doc.select("a[href]");                    
+                            //int y=0; //for debugging and testing
+                            for (Element link : links) {
+                                //y++;
+                                String abs=link.absUrl("href");
+                                if (abs == null || abs.length() != 0) {
 
-                                //System.out.println("absolute link(before process it) : " + abs+" from thread "+id );
-                                ///processURL ///remove bookmarks and check them between each others
-                                abs=processURL(abs);
-                                tc.addNewUrl(abs);  
-                                //for debugging
-                                //System.out.println(y);
-                                //System.out.println("absolute link : " + abs );
-                            }  
+                                    //System.out.println("absolute link(before process it) : " + abs+" from thread "+id );
+                                    ///processURL ///remove bookmarks and check them between each others
+                                    abs=processURL(abs);
+                                    tc.addNewUrl(abs);  
+                                    //for debugging
+                                    //System.out.println(y);
+                                    //System.out.println("absolute link : " + abs );                                 
+                                }
+
+                                if(DB.SearchURL(newUrl)){ /////////////CHANGE DOC   ////// JUST FOR TESTING
+                                    DB.InsertURL(newUrl, "Hii");
+                                    tc.incTotalLinks();
+                                }
+                            }
+
+
                         }
-                        tc.incTotalLinks();
-                        if(DB.SearchURL(newUrl)) /////////////CHANGE DOC   ////// JUST FOR TESTING
-                            DB.InsertURL(newUrl, "Hii");
+                        catch(org.jsoup.HttpStatusException e )
+                        {
+                            System.out.println("Bad Symbole ");
+                        }
+                        catch(IOException e)
+                        {
+                            System.out.println("Ignore this link .. ");
+                            //e.printStackTrace();                      
+                        }      
                     }
-                    catch(Exception e)
-                    {
-                        System.out.println("Ignore this link .. ");
-                    }
-                    /*catch(javax.net.ssl.SSLHandshakeException j)
-                    {
-                        System.out.println("Ignore this link .. ");
-                    }
-                    //sun.security.validator.ValidatorException
-                      */      
                 }
 
+                
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        }catch (IOException e) {
+            //e.printStackTrace();
+            System.out.println("!!!!!! ");
         }
     }
         
@@ -128,5 +152,6 @@ public class ControllableThread extends Thread {
        return Url.substring(0, endPos);
    }
         
-        
+
 }
+
