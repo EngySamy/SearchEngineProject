@@ -30,21 +30,37 @@ public class ProjectAPT {
         Database DB=new Database();
         BasicConfigurator.configure(); //for robot.txt handling
         DB.connect();
-        System.out.println("Connected");
-        //DB.createDatabase();
-        //DB.createTables();
-        int mxThreads=5;
-        String[]seeds={"https://en.wikipedia.org/wiki/Main_Page","https://yahoo.tumblr.com/" };
-        //seeds=null;
+        DB.createDatabase();
+        DB.createTables();
+        
+        Indexer indexer=new Indexer();
+        Vector<Link> links = new Vector<>();
+        int mxThreads=20;
+        String[]seeds={"https://en.wikipedia.org/wiki/Main_Page","https://yahoo.tumblr.com/","https://dev.mysql.com/doc/refman/5.7/en/charset-database.html", "http://dmoztools.net/", "http://www.imdb.com/", "https://archive.org/", "http://www.W3.org/", "http://www.ebay.com/", "https://www.cnet.com/", "http://www.ieee.org/", "https://www.bloomberg.com/"};
         ThreadController Controller=new ThreadController(mxThreads,seeds,DB);
-        ///boolean done=false;
-        while(Controller.getTotalLinks()<ThreadController.MAX_Links)
-        {
-            Controller.CheckState();
-        }
-      
         
-     
-        
+        int count = 0;
+        while(true)
+        { 
+            if(DB.SelectMaxLinkID() != null)
+            {  
+                    links = DB.SelectURL();
+                    if (!(links.isEmpty()))
+                    {
+                        DB.DeleteDoc(links.lastElement().ID);
+                        for (int k=0; k<links.size(); k++)
+                            indexer.createIndex(DB, links.get(k).ID, links.get(k).Document);
+                        links.removeAllElements();
+                    }           
+            }
+            if (Controller.getTotalLinks()>ThreadController.MAX_Links)
+            {
+                if (count < 5)
+                    count++;
+                else
+                    break;
+            }
+           Controller.CheckState();     
+        }  
     }    
 }
