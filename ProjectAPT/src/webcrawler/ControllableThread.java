@@ -2,24 +2,8 @@ package webcrawler;
 
 //import com.google.common.hash.BloomFilter;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.HttpURLConnection;
 import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.LinkedList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -61,18 +45,10 @@ public class ControllableThread extends Thread {
             String uu=tc.TakeURLToFetch(id);
             while(uu!=null &&!uu.equals(""))
             {
-                // pop new urls from the queue until queue is empty
-                //for (String newURL = tc.pop(id);
-                  //       newURL != null;
-                    //     newURL = tc.pop(id)) {
-                        // Process the newTask
-                        System.out.println("I'm thread "+id);
-                        process(uu);
-                        c=tc.getTotalLinks();
-                        System.out.println("Total gathered links now are "+c);
-                        if(c>=ThreadController.MAX_Links )
-                            break;
-                //}              
+                System.out.println("I'm thread "+id);
+                process(uu);
+                c=tc.getTotalLinks();
+                System.out.println("Total gathered links now are "+c);             
                 if(c>=ThreadController.MAX_Links )
                     break;
                 else
@@ -115,9 +91,13 @@ public class ControllableThread extends Thread {
                                 
                             }
                             //if(DB.SearchURL(newUrl))
+                            try
                             { /////////////CHANGE DOC   ////// JUST FOR TESTING
                                 DB.InsertURL(newUrl, doc.toString());
                                 tc.incTotalLinks();
+                            }
+                            catch(Exception e){
+                                
                             }
 
                         }
