@@ -13,7 +13,7 @@ import projectapt.Database;
 public class ThreadController {
     //maximum number of parallel threads
     public static final int MAX_Links = 6000;
-    static final long NUM_PERIOD =1000;
+    static final long NUM_PERIOD =10;
     int savedStates;
     int maxThreads;
     AtomicInteger finishedThreads;
