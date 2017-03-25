@@ -14,4 +14,5 @@ public class Word {
 
 	char Importance;
 	int Count;
+        String Location;
 }
