@@ -1,0 +1,4 @@
+		Name			Section				BN
+Amal Abdel Nafei    	  1                 8		[Semester]
+Engy Samy				  1					9		[Semester]
+Mennah Rabie			  2					21		[Semester]
