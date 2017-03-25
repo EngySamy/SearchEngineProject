@@ -34,8 +34,7 @@ public class ProjectAPT {
         //DB.createDatabase();
         //DB.createTables();
         int mxThreads=5;
-        String[]seeds={"https://en.wikipedia.org/wiki/Main_Page","https://yahoo.tumblr.com/","https://dev.mysql.com/doc/refman/5.7/en/charset-database.html"
-                        ,"http://stackoverflow.com/questions/21076179/pkix-path-building-failed-and-unable-to-find-valid-certification-path-to-requ"};
+        String[]seeds={"https://en.wikipedia.org/wiki/Main_Page","https://yahoo.tumblr.com/" };
         //seeds=null;
         ThreadController Controller=new ThreadController(mxThreads,seeds,DB);
         ///boolean done=false;

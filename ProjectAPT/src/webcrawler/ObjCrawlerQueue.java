@@ -6,16 +6,16 @@ public class ObjCrawlerQueue {
 
 	protected Set<String> gatheredURLs;
 	//Set processedURLs;
-	protected Map<Integer, String> queues; ///these each queue is for one thread ==> take from the set for this queue
+	protected Map<Integer, String> threadUrl; ///these each queue is for one thread ==> take from the set for this queue
 	protected int mx; //number of the max queues or threads
 	protected int nQ; //number of the current queues 
 
 	public ObjCrawlerQueue(int _mx) {
 		mx = _mx;
                 nQ=0;////////////////////////////////////////////
-		queues = new HashMap<>();
+		threadUrl = new HashMap<>();
 		for (int n = 0; n < mx; n++) {
-			queues.put(n,new String()) ;
+			threadUrl.put(n,new String()) ;
 		}
                 gatheredURLs=new LinkedHashSet<String>();
 	}
@@ -23,9 +23,9 @@ public class ObjCrawlerQueue {
 	public ObjCrawlerQueue() { //defualt constructor with max num of threads and queues=50
             mx = 50;
             nQ=0;////////////////////////////////////////////
-            queues = new HashMap<>();
+            threadUrl = new HashMap<>();
             for (int n = 0; n < mx; n++) {
-                    queues.put(n,"") ;
+                    threadUrl.put(n,"") ;
             }
             gatheredURLs=new LinkedHashSet<>();
 	}
@@ -80,6 +80,6 @@ public class ObjCrawlerQueue {
 
 	public void clear() {
 		for (int n = 0; n < nQ; n++)
-			queues.clear();
+			threadUrl.clear();
 	}
 }
