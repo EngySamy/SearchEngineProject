@@ -14,8 +14,8 @@ public class Database {
    String DB_URL = "jdbc:mysql://localhost:3306/mysql?zeroDateTimeBehavior=convertToNull";
 
    //  Database credentials
-   String USER = "Mennah";
-   String PASS = "1371994";
+   String USER = "root";
+   String PASS = "EngySamyElShorbagy";
    
    Connection conn = null;
    Statement stmt = null;
@@ -472,7 +472,8 @@ public class Database {
         } 
         catch (SQLException ex) 
         {
-            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+            //Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("Escape this link");
         }
     }
     public ResultSet loadBackup(){
