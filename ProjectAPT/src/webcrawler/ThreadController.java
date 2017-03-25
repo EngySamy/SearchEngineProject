@@ -1,7 +1,5 @@
 package webcrawler;
 
-import static java.lang.Thread.State.NEW;
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -14,8 +12,8 @@ import projectapt.Database;
 
 public class ThreadController {
     //maximum number of parallel threads
-    public static final int MAX_Links = 200;
-    static final long NUM_PERIOD =100;
+    public static final int MAX_Links = 6000;
+    static final long NUM_PERIOD =1000;
     int savedStates;
     int maxThreads;
     AtomicInteger finishedThreads;
@@ -35,21 +33,21 @@ public class ThreadController {
     Database DB;
 
     AtomicInteger linksTotal;
-    boolean indecator;
+    
+    Backup bc;
 
 
     public ThreadController(int _maxThreads,String[] seeds,Database _db)
             throws InstantiationException, IllegalAccessException {
             maxThreads = _maxThreads;
             counter=new AtomicInteger(0);
-            //nThreads = 0;
             linksTotal=new AtomicInteger(0);
-            indecator=false;
             urlQueues=new ObjCrawlerQueue(maxThreads);
             finishedThreads=new AtomicInteger(0);
             threads=new HashMap<>();
             savedStates=1;
             DB=_db;
+            bc=new Backup(DB,this,urlQueues,maxThreads);
             if(seeds==null)
                 this.loadSavedUrls();
             else                
@@ -61,17 +59,16 @@ public class ThreadController {
         
     private synchronized void createThreads() //call it just one time in the start of the program
 	throws InstantiationException, IllegalAccessException {
-        //nThreads=(int)Math.ceil(urlQueues.getGatheredSize()/(double)(maxThreads));
         for (int n = 0; n < maxThreads; n++) {
             ControllableThread thread =new ControllableThread();
             thread.setThreadController(this);
-            //thread.setQueue(urlQueues.queues.get(n));
             thread.setId(n);
             thread.setDB(DB);
             threads.put(n, thread);
         }      
         for (Map.Entry<Integer, ControllableThread> entry : threads.entrySet())
-            entry.getValue().start();              
+            entry.getValue().start();
+        bc.start();
     }
     public int updateTotalLinks(int add){
         return linksTotal.addAndGet(add);
@@ -95,21 +92,13 @@ public class ThreadController {
     
     public synchronized String TakeURLToFetch(int threadId)
     {
-        //double avgToHaveInThrd=Math.ceil(urlQueues.gatheredURLs.size()/(double)maxThreads);
-        //if(avgToHaveInThrd<1)
-          //  avgToHaveInThrd=1;
-        
-        //int num=(int)avgToHaveInThrd;
         Iterator<String> iter=urlQueues.gatheredURLs.iterator();
-        //int n=0;
-        //for ( n = 0; n < num && iter.hasNext()==true; n++) {
         if(iter.hasNext()){
             String st=iter.next();
             iter.remove();
             return st;
         } 
         return "";
-        //return true;
     }
     
     public void CheckState(){
@@ -165,10 +154,6 @@ public class ThreadController {
     public int getMaxThreads() {
         return maxThreads;
     }
- 
-    /*public String pop(int threadID) {
-        return urlQueues.pop(threadID);
-    }*/
     
     public synchronized void addNewUrl(String Url)
     {
