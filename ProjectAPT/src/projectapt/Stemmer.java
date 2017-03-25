@@ -12,31 +12,37 @@ public class Stemmer {
     
     Map <String, Word> stemTerm (Map <String, Word> WordsInfo) 
     {
-        String in,s1;
+        String original,stemmed;
         Word val;
         Map <String, Word> newMap=new HashMap();
-        //for (Iterator<Map.Entry<String, Word>> it = WordsInfo.entrySet().iterator(); it.hasNext();)
         for (Map.Entry<String, Word> entry : WordsInfo.entrySet())
         {
-            //Map.Entry<String, Word> entry = it.next();
-            in=entry.getKey();
+            original=entry.getKey();
             val=entry.getValue();
-            
-            s1=in.toLowerCase();
-            //s1=stemTerm(s1);
 
             PorterStemmer stemmer = new PorterStemmer();
-            stemmer.setCurrent(s1);
+            stemmer.setCurrent(original);
             stemmer.stem();
-            s1=stemmer.getCurrent();
+            stemmed=stemmer.getCurrent();
 
-            newMap.put(s1, val);
-            //WordsInfo.put(s1, WordsInfo.remove(in));
-
-            //System.out.println(s1);
+            Word w=newMap.get(stemmed);
+            if(w!=null)
+            {
+                val.Count+=w.Count;
+                val.Location+=w.Location;
+                if(w.Importance=='T')
+                    val.Importance='T';
+                else if(w.Importance=='H' && (val.Importance=='I' || val.Importance=='X'))
+                    val.Importance='H';
+                else if(w.Importance=='I' && val.Importance=='X')
+                    val.Importance='I';
                 
-            //PrintStream p=new PrintStream(out);
-            //p.printf(s1);
+                newMap.replace(stemmed, val);
+            }
+            else
+            {
+                newMap.put(stemmed, val);
+            }
         }
         
         return newMap;
