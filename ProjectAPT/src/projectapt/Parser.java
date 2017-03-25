@@ -24,62 +24,23 @@ import org.apache.commons.lang3.*;
 public class Parser {
 	
 	String webPageString;
-	//File webPage;
-        Long DocLength;
+	String webPageString_Temp;
+
 	Map <String, Word> WordsInfo = new HashMap();
-        Long DocID;
+
 	
 	 Parser (String s, Map <String, Word> WI) throws IOException
 	 {
                  WordsInfo = WI;
 		 webPageString = s;
-                 //DocID = id;
-                 DocLength = 0L;
 	 }
 	 
 	 void removeTagsAndSetImportance () throws IOException
 	 {
-               // Database DB=new Database();
-              //  DB.connect();
-              //  DB.createTables();
-             //   DB.InsertURL("https://en.wikipedia.org/wiki/Portal:History", webPageString);
-		 
-		webPageString = webPageString.toLowerCase();
-                Document docBeforeAttr = Jsoup.parse(webPageString);
+                webPageString = webPageString.replaceAll("[^\\x00-\\x7F]", "");
+                webPageString_Temp = webPageString;
+
 	
-                String ImgAlt = docBeforeAttr.select("img").attr("alt");
-                ImgAlt = ImgAlt.trim();
-                if (!ImgAlt.equals(""))
-                {
-                    Document docI = Jsoup.parse(ImgAlt);
-                    ImgAlt = docI.text();
-                    String[] arrI = ImgAlt.split(" ");
-
-                    for (String s : arrI)
-                    {
-                            s = s.trim();
-                            if (WordsInfo.containsKey(s))
-                            {
-                                    Word W = (Word) WordsInfo.get(s);
-                                    W.Count++;
-                                    if (W.Importance != 'T')
-                                       W.Importance = 'I';
-                            }
-                            else
-                            {
-                                    Word W = new Word();
-                                    W.Importance = 'I';
-                                    W.Count++; 
-                                    WordsInfo.put(s, W);
-                            }
-                            DocLength++;
-                    }
-
-                    docBeforeAttr.select("img").remove();
-                }
-
-                webPageString = webPageString.replaceAll("(<\\w+)[^>]*(>)", "$1$2");
-
                 Document doc = Jsoup.parse(webPageString);
 
                 String title = doc.select("title").html();
@@ -106,7 +67,6 @@ public class Parser {
                                 W.Count++; 
                                 WordsInfo.put(s, W);
                         }
-                        DocLength++;
                    }
                    doc.select("title").remove();
                 }
@@ -137,7 +97,6 @@ public class Parser {
                                     W.Count++; 
                                     WordsInfo.put(s, W);
                             }
-                            DocLength++;
                     }
                     doc.select("header").remove();
                 }
@@ -167,10 +126,39 @@ public class Parser {
                                     W.Count++; 
                                     WordsInfo.put(s, W);
                             }
-                            DocLength++;
                     }
 
                     doc.select("h1, h2, h3, h4, h5, h6").remove();
+                }
+
+                String ImgAlt = doc.select("img").attr("alt");
+                ImgAlt = ImgAlt.trim();
+                if (!ImgAlt.equals(""))
+                {
+                    Document docI = Jsoup.parse(ImgAlt);
+                    ImgAlt = docI.text();
+                    String[] arrI = ImgAlt.split(" ");
+
+                    for (String s : arrI)
+                    {
+                            s = s.trim();
+                            if (WordsInfo.containsKey(s))
+                            {
+                                    Word W = (Word) WordsInfo.get(s);
+                                    W.Count++;
+                                    if (W.Importance != 'T' && W.Importance != 'H')
+                                       W.Importance = 'I';
+                            }
+                            else
+                            {
+                                    Word W = new Word();
+                                    W.Importance = 'I';
+                                    W.Count++; 
+                                    WordsInfo.put(s, W);
+                            }
+                    }
+
+                    doc.select("img").remove();
                 }
 
                 doc.select("script, style, .hidden, label").remove();
@@ -194,53 +182,20 @@ public class Parser {
                             WordsInfo.put(s, W);
                     }
                 }
-
-                Long KeywordID = null;
-               /* for (Map.Entry<String, Word> entry : WordsInfo.entrySet()) 
-                {
-                    String key = entry.getKey();
-                    Word value = entry.getValue();
-                    System.out.println(key + "  count : " + value.Count +  "  Importance : " + value.Importance);
-                    try 
-                    {
-                        KeywordID = DB.SelectIDSimilarWord(key);
-                    } 
-                    catch (SQLException ex) 
-                    {
-                        Logger.getLogger(Parser.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    if (KeywordID == null)
-                    {
-                        DB.InsertKeyword(key);
-                        try 
-                        {
-                          KeywordID = DB.SelectMaxKeywordID();
-                        } 
-                        catch (SQLException ex) 
-                        {
-                           Logger.getLogger(Parser.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    }
-                    Double Freq = ((double)value.Count/(double)DocLength);
-                    DB.Insertinfo(DocID, KeywordID, value.Importance, Freq);
-                }	  */
 	 }
 	 
-	 private String readFile(String file) throws IOException {
-		    BufferedReader reader = new BufferedReader(new FileReader (file));
-		    String         line = null;
-		    StringBuilder  stringBuilder = new StringBuilder();
-		    String         ls = System.getProperty("line.separator");
-
-		    try {
-		        while((line = reader.readLine()) != null) {
-		            stringBuilder.append(line);
-		            stringBuilder.append(ls);
-		        }
-
-		        return stringBuilder.toString();
-		    } finally {
-		        reader.close();
-		    }
-		}
+         void setWordsLocations ()
+         {
+           webPageString_Temp = Jsoup.parse(webPageString_Temp).text();
+            for (Map.Entry<String, Word> entry : WordsInfo.entrySet()) 
+            { 
+                entry.getValue().Location = ""; 
+                for (int i = -1; (i = webPageString_Temp.indexOf(entry.getKey(), i + 1)) != -1; ) 
+                {
+                     entry.getValue().Location += Integer.toString(i);
+                     entry.getValue().Location += ",";
+                }
+           }
+         }
+         
 }
