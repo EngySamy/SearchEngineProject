@@ -67,7 +67,7 @@ public class Database {
             
           String URLTable= "CREATE TABLE SearchEngine.Websites " +
                           "(Link_ID BIGINT NOT NULL AUTO_INCREMENT, " +
-                          " Link TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci , " + 
+                          " Link VARCHAR(768) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci UNIQUE, " + 
                           " Document LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, " +
                           " PRIMARY KEY ( Link_ID )) CHARACTER SET utf8mb4;"; 
 
@@ -106,7 +106,7 @@ public class Database {
 
             String URLBackupTable= "CREATE TABLE SearchEngine.URLBackup " +
                           "(Link_ID BIGINT NOT NULL AUTO_INCREMENT, " +
-                          " Link TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci , " + 
+                          " Link VARCHAR(768) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci UNIQUE, " + 
                           " PRIMARY KEY ( Link_ID )) CHARACTER SET utf8mb4;";
                             //"alter table SearchEngine.URLBackup ADD UNIQUE(Link(2083))"; 
 
@@ -322,14 +322,14 @@ public class Database {
      public   boolean SearchURL (String url) 
     {
        String Query= "SELECT Link_ID FROM SearchEngine.Websites WHERE Link=" + 
-                     "('"+url+"');"; 
+                     "(?);"; 
        
        ResultSet rs = null;  
        int count = 0; 
        try 
        {
            PreparedStatement ps = conn.prepareStatement(Query);
-            //ps.setString(1, url);
+            ps.setString(1, url);
             rs = ps.executeQuery();
             //Statement st = conn.createStatement();
             //rs = st.executeQuery(Query);
