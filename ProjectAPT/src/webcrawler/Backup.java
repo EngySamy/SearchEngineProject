@@ -22,8 +22,7 @@ public class Backup extends Thread {
     public Backup(Database _db,ThreadController _tc,ObjCrawlerQueue _urlQueues,int _mxThreads){
         DB=_db;
         tc=_tc;
-        urlQueues=_urlQueues;
-        savedStates=0;
+        savedStates=1;
         mxThreads=_mxThreads;
     }
     
@@ -40,46 +39,11 @@ public class Backup extends Thread {
         int temp=tc.getTotalLinks();
         if(temp>=savedStates*NUM_PERIOD) {
             System.out.println("Saving the state now after reaching "+temp+" Links");
-            saveState();
+            tc.saveState();
         }   
     }
     
-    public synchronized void saveState(){
-        
-        try {
-            DB.clearBackup();
-            int num=this.urlQueues.getGatheredSize();
-            Iterator<String> iter=urlQueues.gatheredURLs.iterator();
-            int n;
-            for ( n = 0; n < num && iter.hasNext()==true; n++) {
-                DB.newBackup(iter.next());
-            } 
-        } catch(Exception e)
-        {
-            System.out.println("Escape this link");
-        }
-        
-        savedStates++;        
-    }
-    public synchronized boolean loadSavedUrls(){
-        ResultSet res=DB.loadBackup();
-        int count=0;
-        if(res!=null)
-        {
-            try {
-                while(res.next())
-                {
-                    urlQueues.gatheredURLs.add(res.getString("Link"));
-                    count++;
-                }
-                    
-            } catch (SQLException ex) {
-                Logger.getLogger(ThreadController.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            if (count>0)
-                return true;
-        }
-        return false;
-    }
+
+
     
 }
