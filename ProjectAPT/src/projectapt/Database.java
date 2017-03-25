@@ -264,7 +264,7 @@ public class Database {
        } 
        catch (SQLException ex) 
        {
-        // Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+           
        }
         System.out.println("Selected Max link_id Successfully....");
         Long val = null;
@@ -273,7 +273,6 @@ public class Database {
         {
             if(rs.first())
             {
-                //val =  ((Number) rs.getObject(1)).longValue();
                 val = rs.getLong(1);
             }
         }
@@ -292,7 +291,7 @@ public class Database {
        } 
        catch (SQLException ex) 
        {
-        // Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+
        }
         System.out.println("Checked Info successful....");
         
@@ -301,7 +300,6 @@ public class Database {
         {
             if(rs.first())
             {
-                //val =  ((Number) rs.getObject(1)).longValue();
                 val = rs.getLong(1);
             }
         }
@@ -355,39 +353,28 @@ public class Database {
     
         Vector<Link> SelectURL () throws SQLException, IOException
         {
-            //String Query= "SELECT Document FROM SearchEngine.Websites;" ;
-           // int startingRow=lastRetreival*10;
             String Query= "SELECT * FROM SearchEngine.Websites where Document is not null;" ;
-            //lastRetreival++;
-
-            //System.out.println(Query);
-
             ResultSet rs = null;            
             try 
             {
                  Statement stmt = conn.createStatement();
                  rs = stmt.executeQuery(Query);
 
-                 //create new link object
-                 //links=new Link[100];
-
-                 
                  while(rs.next())
                  {
                     Link l=new Link();
                     //get id
                     long id=rs.getInt(1);
                     l.ID=id;
-                    //links[i].ID=id;
 
 
                     //get URL
                     String url=rs.getString(2);
                     l.URL=url;
-                    //links[i].URL=url;
+
 
                     //get document
-                    Reader in = rs.getCharacterStream(3); //column number ?
+                    Reader in = rs.getCharacterStream(3); 
                     String clobValue = null;
                     if (!rs.wasNull())
                     {
@@ -396,7 +383,7 @@ public class Database {
                     }
                     in.close();
                     l.Document=clobValue;
-                    //links[i].Document=clobValue;
+
 
                     vec.addElement(l);
              }
@@ -447,8 +434,7 @@ public class Database {
            PreparedStatement ps = conn.prepareStatement(Query);
             ps.setString(1, url);
             rs = ps.executeQuery();
-            //Statement st = conn.createStatement();
-            //rs = st.executeQuery(Query);
+
             
              while (rs.next()) {
                ++count;
