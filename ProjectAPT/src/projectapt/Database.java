@@ -11,11 +11,11 @@ import org.apache.commons.io.IOUtils;
 public class Database {
     // JDBC driver name and database URL
    String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
-   String DB_URL = "jdbc:mysql://localhost:3306/mysql?zeroDateTimeBehavior=convertToNull&useUnicode=true&amp;characterEncode=UTF-8";
+   String DB_URL = "jdbc:mysql://localhost:3306/mysql?zeroDateTimeBehavior=convertToNull";
 
    //  Database credentials
-   String USER = "root";
-   String PASS = "EngySamyElShorbagy";
+   String USER = "Mennah";
+   String PASS = "1371994";
    
    Connection conn = null;
    Statement stmt = null;
@@ -45,7 +45,7 @@ public class Database {
     {
        try 
        {
-           PreparedStatement ps = conn.prepareStatement("CREATE DATABASE SearchEngine");
+           PreparedStatement ps = conn.prepareStatement("CREATE DATABASE SearchEngine;");
            int result = ps.executeUpdate();
            System.out.println("created database successfully...");
        } 
@@ -67,9 +67,9 @@ public class Database {
             
           String URLTable= "CREATE TABLE SearchEngine.Websites " +
                           "(Link_ID BIGINT NOT NULL AUTO_INCREMENT, " +
-                          " Link VARCHAR(768) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci UNIQUE, " + 
-                          " Document LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, " +
-                          " PRIMARY KEY ( Link_ID )) CHARACTER SET utf8mb4;"; 
+                          " Link VARCHAR(768) UNIQUE, " + 
+                          " Document LONGTEXT, " +
+                          " PRIMARY KEY ( Link_ID ));"; 
 
 
            PreparedStatement ps1 = conn.prepareStatement(URLTable);
@@ -81,8 +81,9 @@ public class Database {
            String KeywordsTable= "CREATE TABLE SearchEngine.Keywords " +
                          "(Keyword_ID BIGINT NOT NULL AUTO_INCREMENT, " +
                          " Keyword VARCHAR(255) UNIQUE, " + 
-                         " PRIMARY KEY ( Keyword_ID ))"; 
-           String AlterKeywords = "ALTER TABLE SearchEngine.Keywords AUTO_INCREMENT = 1";
+                         " No_Of_Urls BIGINT, " +
+                         " PRIMARY KEY ( Keyword_ID ));"; 
+           String AlterKeywords = "ALTER TABLE SearchEngine.Keywords AUTO_INCREMENT = 1;";
            
            PreparedStatement ps3 = conn.prepareStatement(KeywordsTable);
            ps3.executeUpdate();
@@ -99,24 +100,25 @@ public class Database {
                          " FOREIGN KEY (Keyword_ID) REFERENCES Keywords (Keyword_ID)," + 
                          " Importance CHAR, " +
                          " Frequency DOUBLE, " + 
-                         " PRIMARY KEY ( Link_ID , Keyword_ID ))"; 
+                         " Locations TEXT, " +
+                         " PRIMARY KEY ( Link_ID , Keyword_ID ));"; 
            
             PreparedStatement ps6 = conn.prepareStatement(InfoTable);
             ps6.executeUpdate();
-
+            System.out.println("Created Information table in given database...");
+            
+            
+            
             String URLBackupTable= "CREATE TABLE SearchEngine.URLBackup " +
                           "(Link_ID BIGINT NOT NULL AUTO_INCREMENT, " +
-                          " Link VARCHAR(768) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci UNIQUE, " + 
-                          " PRIMARY KEY ( Link_ID )) CHARACTER SET utf8mb4;";
-                            //"alter table SearchEngine.URLBackup ADD UNIQUE(Link(2083))"; 
-
+                          " Link VARCHAR(768) UNIQUE, " + 
+                          " PRIMARY KEY ( Link_ID ));";
+                           
 
            PreparedStatement ps7 = conn.prepareStatement(URLBackupTable);
            ps7.executeUpdate();
 
            System.out.println("Created URLBackup table in given database...");
-            
-            System.out.println("Created Information table in given database...");
         }
         catch(SQLException se)
         {
@@ -167,15 +169,16 @@ public class Database {
        {
          Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
        }
+       
         System.out.println("Inserted URL successfully...");
     }
     
-    void InsertKeyword (String Keyword)
+    void InsertKeyword (String Keyword, Long Urls)
     {
        String Query= "INSERT INTO SearchEngine.Keywords " +
-                     "(Keyword)" +
+                     "(Keyword, No_Of_Urls)" +
                      "VALUES" +
-                     "(?);"; 
+                     "(?, '"+Urls+"');"; 
        try 
        {
          PreparedStatement ps = conn.prepareStatement(Query);
@@ -189,12 +192,12 @@ public class Database {
         System.out.println("Inserted Keyword successfully...");
     }
     
-    void Insertinfo (Long LnkID, Long KeyID, char Imp, Double Freq)
+    void Insertinfo (Long LnkID, Long KeyID, char Imp, Double Freq, String Loc)
     {
        String Query= "INSERT INTO SearchEngine.Information " +
-                     "(Link_ID, Keyword_ID, Importance, Frequency)" +
+                     "(Link_ID, Keyword_ID, Importance, Frequency, Locations)" +
                      "VALUES" +
-                     "('"+LnkID+"', '"+KeyID+"', '"+Imp+"','"+Freq+"');"; 
+                     "('"+LnkID+"', '"+KeyID+"', '"+Imp+"','"+Freq+"', '"+Loc+"');"; 
        try 
        {
          PreparedStatement ps = conn.prepareStatement(Query);
@@ -207,21 +210,39 @@ public class Database {
         System.out.println("Inserted Info successfully...");
     }
     
-    Long SelectMaxKeywordID () throws SQLException
+    void UpdateInfo (Long LnkID, Long KeyID, char Imp, Double Freq, String Loc) throws SQLException
     {
-       String Query= "SELECT MAX(Keyword_ID) FROM SearchEngine.Keywords;" ;
-       ResultSet rs = null;            
+       String Query= "UPDATE SearchEngine.Information SET Importance = '"+Imp+"', Frequency = '"+Freq+"', Locations = '"+Loc+"' "+ 
+                     "WHERE Link_ID ='"+LnkID+"' AND Keyword_ID = '"+KeyID+"';";
+          
        try 
        {
-         Statement stmt = conn.createStatement();
-         rs = stmt.executeQuery(Query);
+         PreparedStatement ps = conn.prepareStatement(Query);
+         ps.executeUpdate();
 
        } 
        catch (SQLException ex) 
        {
          Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
        }
-        System.out.println("Selected Info Successfully....");
+        System.out.println("Update Info Successfully....");
+    }
+    
+    Long SelectMaxKeywordID () throws SQLException
+    {
+       String Query= "SELECT MAX(Keyword_ID) FROM SearchEngine.Keywords;" ;
+       ResultSet rs = null;            
+       try 
+       {
+         Statement st = conn.createStatement();
+         rs = st.executeQuery(Query);
+
+       } 
+       catch (SQLException ex) 
+       {
+         Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+       }
+        System.out.println("Selected max keyword_id Successfully....");
         Long val = null;
         
         if(rs.next())
@@ -229,6 +250,63 @@ public class Database {
             val =  ((Number) rs.getObject(1)).longValue();
         }
         return val;
+    }
+    
+    Long SelectMaxLinkID () throws SQLException
+    {
+       String Query= "SELECT MAX(Link_ID) FROM SearchEngine.Websites;" ;
+       ResultSet rs = null;            
+       try 
+       {
+         Statement st = conn.createStatement();
+         rs = st.executeQuery(Query);
+
+       } 
+       catch (SQLException ex) 
+       {
+        // Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+       }
+        System.out.println("Selected Max link_id Successfully....");
+        Long val = null;
+        
+        if (rs != null)
+        {
+            if(rs.first())
+            {
+                //val =  ((Number) rs.getObject(1)).longValue();
+                val = rs.getLong(1);
+            }
+        }
+        return val;
+    }
+    
+    Long CheckIfInfoExists(Long KeyID, Long LnkID) throws SQLException
+    {
+       String Query= "SELECT Link_ID FROM SearchEngine.Information where Link_ID = '"+LnkID+"' AND Keyword_ID = '"+KeyID+"';" ;
+       ResultSet rs = null;            
+       try 
+       {
+         Statement st = conn.createStatement();
+         rs = st.executeQuery(Query);
+
+       } 
+       catch (SQLException ex) 
+       {
+        // Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+       }
+        System.out.println("Checked Info successful....");
+        
+        Long val = null;
+         if (rs != null)
+        {
+            if(rs.first())
+            {
+                //val =  ((Number) rs.getObject(1)).longValue();
+                val = rs.getLong(1);
+            }
+        }
+        return val;
+
     }
     
     Long SelectIDSimilarWord (String Keyw) throws SQLException
@@ -246,7 +324,7 @@ public class Database {
        {
          Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
        }
-        System.out.println("Selected ID Successfully....");
+        System.out.println("Selected keyword ID Successfully....");
         Long val = null;
         
         if(r.first())
@@ -256,12 +334,31 @@ public class Database {
         return val;
     }
     
+    
+    void UpdateNo_Urls (Long ID) throws SQLException
+    {
+       String Query= "UPDATE SearchEngine.Keywords SET No_Of_Urls = No_Of_Urls + 1  WHERE Keyword_ID = '"+ID+"';";
+          
+       try 
+       {
+         PreparedStatement ps = conn.prepareStatement(Query);
+         ps.executeUpdate();
+
+       } 
+       catch (SQLException ex) 
+       {
+         Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+       }
+        System.out.println("Update No_Of_Urls Successfully....");
+    }
+    
+    
         Vector<Link> SelectURL () throws SQLException, IOException
         {
             //String Query= "SELECT Document FROM SearchEngine.Websites;" ;
-            int startingRow=lastRetreival*100;
-            String Query= "SELECT * FROM SearchEngine.Websites limit "+startingRow+", 100;" ;
-            lastRetreival++;
+           // int startingRow=lastRetreival*10;
+            String Query= "SELECT * FROM SearchEngine.Websites where Document is not null;" ;
+            //lastRetreival++;
 
             //System.out.println(Query);
 
@@ -316,10 +413,29 @@ public class Database {
          {
              val = rs.getString("Document");
          }
+         
          return vec;
     }
         
-     public   boolean SearchURL (String url) 
+        
+     void DeleteDoc (Long id)
+     {
+       String Query= "UPDATE SearchEngine.Websites SET Document = null WHERE Link_ID <= '"+id+"';";
+          
+       try 
+       {
+         PreparedStatement ps = conn.prepareStatement(Query);
+         ps.executeUpdate();
+
+       } 
+       catch (SQLException ex) 
+       {
+         Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+       }
+        System.out.println("Doc Deleted Successfully");
+     }
+     
+   public   boolean SearchURL (String url) 
     {
        String Query= "SELECT Link_ID FROM SearchEngine.Websites WHERE Link=" + 
                      "(?);"; 
@@ -346,7 +462,7 @@ public class Database {
        return count == 0; 
     }
      
-    public void clearBackup(){
+     public void clearBackup(){
        String Query="DELETE FROM SearchEngine.URLBackup";
 
        try {
