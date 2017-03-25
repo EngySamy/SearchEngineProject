@@ -67,9 +67,9 @@ public class Database {
             
           String URLTable= "CREATE TABLE SearchEngine.Websites " +
                           "(Link_ID BIGINT NOT NULL AUTO_INCREMENT, " +
-                          " Link TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci UNIQUE, " + 
+                          " Link TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci , " + 
                           " Document LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci, " +
-                          " PRIMARY KEY ( Link_ID ) CHARACTER SET utf8mb4 )"; 
+                          " PRIMARY KEY ( Link_ID )) CHARACTER SET utf8mb4;"; 
 
 
            PreparedStatement ps1 = conn.prepareStatement(URLTable);
@@ -106,8 +106,9 @@ public class Database {
 
             String URLBackupTable= "CREATE TABLE SearchEngine.URLBackup " +
                           "(Link_ID BIGINT NOT NULL AUTO_INCREMENT, " +
-                          " Link TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci UNIQUE, " + 
-                          " PRIMARY KEY ( Link_ID ) CHARACTER SET utf8mb4 )"; 
+                          " Link TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci , " + 
+                          " PRIMARY KEY ( Link_ID )) CHARACTER SET utf8mb4;";
+                            //"alter table SearchEngine.URLBackup ADD UNIQUE(Link(2083))"; 
 
 
            PreparedStatement ps7 = conn.prepareStatement(URLBackupTable);
