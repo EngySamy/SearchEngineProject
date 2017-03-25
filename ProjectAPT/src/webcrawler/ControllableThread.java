@@ -116,7 +116,7 @@ public class ControllableThread extends Thread {
                             }
                             //if(DB.SearchURL(newUrl))
                             { /////////////CHANGE DOC   ////// JUST FOR TESTING
-                                DB.InsertURL(newUrl, "Hii");
+                                DB.InsertURL(newUrl, doc.toString());
                                 tc.incTotalLinks();
                             }
 
@@ -156,4 +156,3 @@ public class ControllableThread extends Thread {
         
 
 }
-
