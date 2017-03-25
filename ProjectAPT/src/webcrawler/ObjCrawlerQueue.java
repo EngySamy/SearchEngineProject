@@ -5,7 +5,6 @@ import java.util.*;
 public class ObjCrawlerQueue {
 
 	protected Set<String> gatheredURLs;
-	//Set processedURLs;
 	protected Map<Integer, String> threadUrl; ///these each queue is for one thread ==> take from the set for this queue
 	protected int mx; //number of the max queues or threads
 	protected int nQ; //number of the current queues 
@@ -43,40 +42,10 @@ public class ObjCrawlerQueue {
             return gatheredURLs.contains(url);
         }
 
-
-	/*public int getQueueSize(Integer threadId) {
-		if (threadId < 0 || threadId >= nQ)
-			return 0;
-		else
-			return queues.get(threadId).size();
-	}*/
-
-	/*public int getProcessedSize() {
-		return processedElements.size();
-	}*/
-
 	public synchronized int getGatheredSize() {
 		return gatheredURLs.size();
 	}
 
-        /*@Override
-	public void setMaxElements(int elements) {
-		mx = elements;
-	}*/
-
-	/*public String pop(Integer threadId) {   //pop from a queue of certain thread       
-		if (queues.get(threadId).isEmpty())
-                    return null;
-		else
-                    return queues.get(threadId).removeFirst();
-	}*/
-
-	/*public boolean push(String URL, Integer threadId) {
-		if (queues.get(threadId)==null)
-			return false;
-		queues.get(threadId).addLast(URL);
-		return true;
-	}*/
 
 	public void clear() {
 		for (int n = 0; n < nQ; n++)
